@@ -1,27 +1,45 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/enums/registration_date_filter.dart';
+import '../../../../core/enums/subscription_plan.dart';
+import '../../../../core/enums/subscription_status.dart';
+import '../../data/models/shop.dart';
 import '../../data/shops_mock_data.dart';
 import 'shops_state.dart';
 
 class ShopsCubit extends Cubit<ShopsState> {
-  ShopsCubit({String initialQuery = ''})
-    : super(ShopsState(query: initialQuery));
+  ShopsCubit({
+    String initialQuery = '',
+    Future<List<Shop>> Function()? fetchShops,
+  }) : _fetchShops = fetchShops ?? _fetchMockShops,
+       super(ShopsState(query: initialQuery));
 
   static const Duration _mockLatency = Duration(milliseconds: 700);
 
-  Future<void> load() async {
-    emit(state.copyWith(isLoading: true));
+  final Future<List<Shop>> Function() _fetchShops;
+
+  static Future<List<Shop>> _fetchMockShops() async {
     await Future<void>.delayed(_mockLatency);
-    if (isClosed) return;
-    emit(
-      state.copyWith(
-        isLoading: false,
-        shops: ShopsMockData.shops(),
-        totalOnPlatform: ShopsMockData.totalOnPlatform,
-        updatedAt: DateTime.now(),
-      ),
-    );
+    return ShopsMockData.shops();
+  }
+
+  Future<void> load() async {
+    emit(state.copyWith(isLoading: true, hasError: false));
+    try {
+      final List<Shop> shops = await _fetchShops();
+      if (isClosed) return;
+      emit(
+        state.copyWith(
+          isLoading: false,
+          shops: shops,
+          totalOnPlatform: ShopsMockData.totalOnPlatform,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(isLoading: false, hasError: true));
+    }
   }
 
   void syncShops() => emit(state.copyWith(shops: ShopsMockData.shops()));

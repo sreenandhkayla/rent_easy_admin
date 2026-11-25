@@ -8,11 +8,7 @@ class ShopsStrings {
   static const String searchHint = 'Search shop name, shop ID or owner';
 
   static const String allSubscriptions = 'All subscriptions';
-  static const String allPlans = 'All plans';
   static const String allShopStatuses = 'All shop statuses';
-  static const String basic = 'Basic';
-  static const String professional = 'Professional';
-  static const String premium = 'Premium';
 
   static const String shopName = 'Shop name';
   static const String shopId = 'Shop ID';
@@ -29,6 +25,9 @@ class ShopsStrings {
   static const String noShopsMessage =
       'Shops appear here once owners register them through the ToolRent '
       'Owner App.';
+  static const String loadErrorTitle = "Couldn't load shops";
+  static const String refreshError =
+      "Couldn't refresh shops. Check your connection and try again.";
   static const String noMatchesTitle = 'No matching shops';
   static const String noMatchesMessage =
       'Try a different shop name, shop ID or owner, or clear the filters.';
@@ -44,7 +43,6 @@ class ShopsStrings {
 
   static const String subscriptionSummary = 'Subscription summary';
   static const String viewSubscription = 'View subscription';
-  static const String subscriptionDetails = 'Subscription details';
   static const String currentPlan = 'Current plan';
   static const String status = 'Status';
   static const String lastPayment = 'Last payment';
@@ -54,10 +52,6 @@ class ShopsStrings {
   static const String allowed = 'Allowed';
   static const String restricted = 'Restricted';
   static const String blockedShopRestricted = 'Blocked — shop restricted';
-  static const String paymentVerified = 'Verified';
-  static const String paymentPending = 'Pending';
-  static const String paymentFailed = 'Failed';
-  static const String noPayment = 'No payment';
 
   static const String relatedBranches = 'Related branches';
   static const String relatedBranchesNote =

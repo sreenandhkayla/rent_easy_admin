@@ -14,6 +14,7 @@ class AppSecondaryButton extends StatelessWidget {
     this.svgIcon,
     this.isDestructive = false,
     this.isExpanded = false,
+    this.labelStyle,
   });
 
   final String label;
@@ -22,6 +23,7 @@ class AppSecondaryButton extends StatelessWidget {
   final String? svgIcon;
   final bool isDestructive;
   final bool isExpanded;
+  final TextStyle? labelStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class AppSecondaryButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           ),
-          textStyle: AppTextStyles.buttonSecondary,
+          textStyle: labelStyle ?? AppTextStyles.buttonSecondary,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -65,7 +67,7 @@ class AppSecondaryButton extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                style: AppTextStyles.buttonSecondary.copyWith(
+                style: (labelStyle ?? AppTextStyles.buttonSecondary).copyWith(
                   color: foreground,
                 ),
               ),

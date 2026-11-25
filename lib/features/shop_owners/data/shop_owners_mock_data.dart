@@ -177,7 +177,7 @@ class ShopOwnersMockData {
       status: OwnerStatus.active,
     ),
     ShopOwner(
-      name: 'Kumar Raghunath',
+      name: 'Sreeja Nair',
       mobile: '+91 98460 55120',
       ownerId: 'OWN-10402',
       registeredAt: DateTime(2024, 12, 9),
@@ -195,7 +195,7 @@ class ShopOwnersMockData {
       status: OwnerStatus.active,
     ),
     ShopOwner(
-      name: 'Meera Suresh',
+      name: 'Nisha Thomas',
       mobile: '+91 94950 12876',
       ownerId: 'OWN-10587',
       registeredAt: DateTime(2025, 8, 30),
@@ -204,12 +204,12 @@ class ShopOwnersMockData {
       status: OwnerStatus.active,
     ),
     ShopOwner(
-      name: 'Muhammed Ashraf',
+      name: 'Vinod Pillai',
       mobile: '+91 97450 80931',
       ownerId: 'OWN-10495',
       registeredAt: DateTime(2025, 3, 27),
-      shops: 4,
-      subscribedShops: 3,
+      shops: 1,
+      subscribedShops: 1,
       status: OwnerStatus.active,
     ),
     ShopOwner(
@@ -222,13 +222,13 @@ class ShopOwnersMockData {
       status: OwnerStatus.active,
     ),
     ShopOwner(
-      name: 'Salam Koya',
+      name: 'Priya Varghese',
       mobile: '+91 96330 27584',
       ownerId: 'OWN-10626',
       registeredAt: DateTime(2026, 5, 4),
-      shops: 2,
-      subscribedShops: 0,
-      status: OwnerStatus.restricted,
+      shops: 1,
+      subscribedShops: 1,
+      status: OwnerStatus.active,
     ),
   ];
 }

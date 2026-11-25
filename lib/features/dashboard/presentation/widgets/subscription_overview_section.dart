@@ -4,9 +4,8 @@ import '../../../../core/resources/strings/dashboard_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
-import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_responsive_grid.dart';
-import '../../../../core/widgets/app_status_dot.dart';
+import '../../../../core/widgets/app_stat_card.dart';
 import '../../../../core/widgets/app_text_link.dart';
 import '../../data/models/dashboard_summary.dart';
 
@@ -45,74 +44,33 @@ class SubscriptionOverviewSection extends StatelessWidget {
         AppResponsiveGrid(
           minItemWidth: 200,
           children: [
-            _SubscriptionStatCard(
+            AppStatCard(
               label: DashboardStrings.activeSubscriptions,
-              value: summary.activeSubscriptions,
+              value: AppFormatters.number(summary.activeSubscriptions),
               caption: DashboardStrings.activeSubscriptionsCaption,
               dotColor: AppColors.statusGreen,
             ),
-            _SubscriptionStatCard(
+            AppStatCard(
               label: DashboardStrings.unsubscribedShops,
-              value: summary.unsubscribedShops,
+              value: AppFormatters.number(summary.unsubscribedShops),
               caption: DashboardStrings.unsubscribedShopsCaption,
               dotColor: AppColors.statusGrey,
             ),
-            _SubscriptionStatCard(
+            AppStatCard(
               label: DashboardStrings.expiringSoon,
-              value: summary.expiringSoon,
+              value: AppFormatters.number(summary.expiringSoon),
               caption: DashboardStrings.expiringSoonCaption,
               dotColor: AppColors.statusAmber,
             ),
-            _SubscriptionStatCard(
+            AppStatCard(
               label: DashboardStrings.expiredSubscriptions,
-              value: summary.expiredSubscriptions,
+              value: AppFormatters.number(summary.expiredSubscriptions),
               caption: DashboardStrings.expiredSubscriptionsCaption,
               dotColor: AppColors.statusRed,
             ),
           ],
         ),
       ],
-    );
-  }
-}
-
-class _SubscriptionStatCard extends StatelessWidget {
-  const _SubscriptionStatCard({
-    required this.label,
-    required this.value,
-    required this.caption,
-    required this.dotColor,
-  });
-
-  final String label;
-  final int value;
-  final String caption;
-  final Color dotColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              AppStatusDot(color: dotColor),
-              const SizedBox(width: 8),
-              Expanded(child: Text(label, style: AppTextStyles.labelRegular)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            AppFormatters.number(value),
-            style: AppTextStyles.statValueMedium,
-          ),
-          const Spacer(),
-          const SizedBox(height: 8),
-          Text(caption, style: AppTextStyles.meta),
-        ],
-      ),
     );
   }
 }

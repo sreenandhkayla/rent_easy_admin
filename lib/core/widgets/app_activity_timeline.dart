@@ -9,12 +9,16 @@ class AppTimelineEntry {
     required this.subtitle,
     this.detail,
     this.isHighlighted = false,
+    this.dotColor,
   });
 
   final String title;
   final String subtitle;
   final String? detail;
   final bool isHighlighted;
+  final Color? dotColor;
+
+  Color? get fillColor => dotColor ?? (isHighlighted ? AppColors.ink : null);
 }
 
 class AppActivityTimeline extends StatelessWidget {
@@ -57,11 +61,9 @@ class _TimelineRow extends StatelessWidget {
                   height: 9,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: entry.isHighlighted ? AppColors.ink : null,
+                    color: entry.fillColor,
                     border: Border.all(
-                      color: entry.isHighlighted
-                          ? AppColors.ink
-                          : AppColors.statusGrey,
+                      color: entry.fillColor ?? AppColors.statusGrey,
                       width: 1.5,
                     ),
                   ),

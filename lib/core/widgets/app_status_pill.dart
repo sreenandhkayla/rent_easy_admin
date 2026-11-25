@@ -9,11 +9,13 @@ class AppStatusPill extends StatelessWidget {
     required this.label,
     required this.color,
     required this.backgroundColor,
+    this.showDot = true,
   });
 
   final String label;
   final Color color;
   final Color backgroundColor;
+  final bool showDot;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +28,10 @@ class AppStatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppStatusDot(color: color, size: 5),
-          const SizedBox(width: 5),
+          if (showDot) ...[
+            AppStatusDot(color: color, size: 5),
+            const SizedBox(width: 5),
+          ],
           Flexible(
             child: Text(
               label,

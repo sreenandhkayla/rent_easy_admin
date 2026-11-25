@@ -204,7 +204,7 @@ class _OwnerRow extends StatelessWidget {
                 AppInitialsAvatar(name: owner.name, size: 30, isMuted: true),
                 const SizedBox(width: 10),
                 Flexible(
-                  child: Text(owner.name, style: AppTextStyles.titleSmall),
+                  child: Text(owner.name, style: AppTextStyles.tableCellStrong),
                 ),
               ],
             ),

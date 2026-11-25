@@ -56,6 +56,8 @@ class AppStrings {
       'You will need your password and verification code to sign in again.';
   static const String cancel = 'Cancel';
   static const String refresh = 'Refresh';
+  static const String retry = 'Retry';
+  static const String checkConnection = 'Check your connection and try again.';
   static const String view = 'View';
   static const String previousPage = 'Previous page';
   static const String nextPage = 'Next page';
@@ -68,6 +70,14 @@ class AppStrings {
   static const String statusExpiringSoon = 'Expiring soon';
   static const String statusExpired = 'Expired';
   static const String statusUnsubscribed = 'Unsubscribed';
+  static const String allPlans = 'All plans';
+  static const String planBasic = 'Basic';
+  static const String planProfessional = 'Professional';
+  static const String planPremium = 'Premium';
+  static const String paymentPaid = 'Paid';
+  static const String paymentPending = 'Pending';
+  static const String paymentFailed = 'Failed';
+  static const String noPayment = 'No payment';
 
   static String updatedAt(DateTime date) =>
       'Updated ${AppFormatters.dateTime(date)}';

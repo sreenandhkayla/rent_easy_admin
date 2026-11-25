@@ -26,6 +26,27 @@ class AppFormatters {
     return buffer.toString();
   }
 
+  static String rupees(int value) {
+    final String digits = value.abs().toString();
+    if (digits.length <= 3) return '₹${value < 0 ? '-' : ''}$digits';
+    final String lastThree = digits.substring(digits.length - 3);
+    final String rest = digits.substring(0, digits.length - 3);
+    final StringBuffer buffer = StringBuffer();
+    for (int i = 0; i < rest.length; i++) {
+      if (i > 0 && (rest.length - i) % 2 == 0) buffer.write(',');
+      buffer.write(rest[i]);
+    }
+    return '₹${value < 0 ? '-' : ''}$buffer,$lastThree';
+  }
+
+  static String rupeesLakh(int value) =>
+      '₹${(value / 100000).toStringAsFixed(1)}L';
+
+  static String percent(double fraction) =>
+      '${(fraction * 100).toStringAsFixed(1)}%';
+
+  static String monthShort(DateTime date) => _months[date.month - 1];
+
   static String dayMonth(DateTime date) =>
       '${_twoDigits(date.day)} ${_months[date.month - 1]}';
 

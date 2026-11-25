@@ -1,12 +1,9 @@
 import 'dart:math' as math;
 
 import '../../../../core/enums/registration_date_filter.dart';
+import '../../../../core/enums/subscription_plan.dart';
 import '../../../../core/enums/subscription_status.dart';
 import '../../data/models/shop.dart';
-
-enum SubscriptionFilter { all, active, expiringSoon, expired, unsubscribed }
-
-enum PlanFilter { all, basic, professional, premium }
 
 enum ShopStatusFilter { all, active, restricted }
 
@@ -15,6 +12,7 @@ enum ShopSortField { name, expiry }
 class ShopsState {
   const ShopsState({
     this.isLoading = true,
+    this.hasError = false,
     this.shops = const [],
     this.totalOnPlatform = 0,
     this.updatedAt,
@@ -31,6 +29,7 @@ class ShopsState {
   static const int pageSize = 8;
 
   final bool isLoading;
+  final bool hasError;
   final List<Shop> shops;
   final int totalOnPlatform;
   final DateTime? updatedAt;
@@ -52,23 +51,10 @@ class ShopsState {
           shop.name.toLowerCase().contains(search) ||
           shop.shopId.toLowerCase().contains(search) ||
           shop.ownerName.toLowerCase().contains(search);
-      final bool matchesSubscription = switch (subscriptionFilter) {
-        SubscriptionFilter.all => true,
-        SubscriptionFilter.active =>
-          shop.subscription == SubscriptionStatus.active,
-        SubscriptionFilter.expiringSoon =>
-          shop.subscription == SubscriptionStatus.expiringSoon,
-        SubscriptionFilter.expired =>
-          shop.subscription == SubscriptionStatus.expired,
-        SubscriptionFilter.unsubscribed =>
-          shop.subscription == SubscriptionStatus.unsubscribed,
-      };
-      final bool matchesPlan = switch (planFilter) {
-        PlanFilter.all => true,
-        PlanFilter.basic => shop.plan == ShopPlan.basic,
-        PlanFilter.professional => shop.plan == ShopPlan.professional,
-        PlanFilter.premium => shop.plan == ShopPlan.premium,
-      };
+      final bool matchesSubscription = subscriptionFilter.matches(
+        shop.subscription,
+      );
+      final bool matchesPlan = planFilter.matches(shop.plan);
       final bool matchesStatus = switch (statusFilter) {
         ShopStatusFilter.all => true,
         ShopStatusFilter.active => shop.status == ShopStatus.active,
@@ -114,6 +100,7 @@ class ShopsState {
 
   ShopsState copyWith({
     bool? isLoading,
+    bool? hasError,
     List<Shop>? shops,
     int? totalOnPlatform,
     DateTime? updatedAt,
@@ -128,6 +115,7 @@ class ShopsState {
   }) {
     return ShopsState(
       isLoading: isLoading ?? this.isLoading,
+      hasError: hasError ?? this.hasError,
       shops: shops ?? this.shops,
       totalOnPlatform: totalOnPlatform ?? this.totalOnPlatform,
       updatedAt: updatedAt ?? this.updatedAt,

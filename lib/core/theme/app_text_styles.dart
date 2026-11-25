@@ -183,8 +183,8 @@ class AppTextStyles {
 
   static const TextStyle labelRegular = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
     height: 1.45,
     color: AppColors.textPrimary,
   );
@@ -232,7 +232,7 @@ class AppTextStyles {
     fontSize: 13,
     fontWeight: FontWeight.w500,
     height: 1,
-    color: AppColors.textPrimary,
+    color: AppColors.sidebarText,
   );
 
   static const TextStyle tableCell = TextStyle(
@@ -260,8 +260,8 @@ class AppTextStyles {
 
   static const TextStyle detailValue = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
     height: 1.3,
     color: AppColors.textPrimary,
   );
@@ -284,9 +284,40 @@ class AppTextStyles {
 
   static const TextStyle tableCellStrong = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.3,
     color: AppColors.textPrimary,
+  );
+
+  static const TextStyle actionLabel = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle tab = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.2,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle metaPositive = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    height: 1.45,
+    color: AppColors.statusGreen,
+  );
+
+  static const TextStyle labelMuted = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.45,
+    color: AppColors.sidebarText,
   );
 }

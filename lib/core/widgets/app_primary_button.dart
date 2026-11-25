@@ -14,6 +14,8 @@ class AppPrimaryButton extends StatelessWidget {
     this.isCompact = false,
     this.isDestructive = false,
     this.svgIcon,
+    this.icon,
+    this.labelStyle,
   });
 
   final String label;
@@ -22,6 +24,11 @@ class AppPrimaryButton extends StatelessWidget {
   final bool isCompact;
   final bool isDestructive;
   final String? svgIcon;
+  final IconData? icon;
+  final TextStyle? labelStyle;
+
+  TextStyle get _labelStyle =>
+      labelStyle?.copyWith(color: AppColors.onInk) ?? AppTextStyles.button;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +53,7 @@ class AppPrimaryButton extends StatelessWidget {
               isCompact ? AppTheme.radiusMedium : AppTheme.radiusLarge,
             ),
           ),
-          textStyle: AppTextStyles.button,
+          textStyle: _labelStyle,
         ),
         child: isLoading
             ? const SizedBox.square(
@@ -70,8 +77,11 @@ class AppPrimaryButton extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
+                  ] else if (icon != null) ...[
+                    Icon(icon, size: 16, color: AppColors.onInk),
+                    const SizedBox(width: 8),
                   ],
-                  Flexible(child: Text(label, style: AppTextStyles.button)),
+                  Flexible(child: Text(label, style: _labelStyle)),
                 ],
               ),
       ),

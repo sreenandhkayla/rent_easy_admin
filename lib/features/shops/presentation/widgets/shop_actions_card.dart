@@ -34,8 +34,9 @@ class ShopActionsCard extends StatelessWidget {
           const SizedBox(height: 14),
           AppSecondaryButton(
             label: ShopsStrings.viewOwner,
-            icon: Icons.person_outline,
+            svgIcon: AppImages.viewOwnerIcon,
             isExpanded: true,
+            labelStyle: AppTextStyles.actionLabel,
             onPressed: onViewOwner,
           ),
           const SizedBox(height: 10),
@@ -43,6 +44,7 @@ class ShopActionsCard extends StatelessWidget {
             label: ShopsStrings.viewSubscription,
             svgIcon: AppImages.subscriptionIcon,
             isExpanded: true,
+            labelStyle: AppTextStyles.actionLabel,
             onPressed: onViewSubscription,
           ),
           const SizedBox(height: 10),
@@ -51,6 +53,7 @@ class ShopActionsCard extends StatelessWidget {
               label: ShopsStrings.restoreShop,
               svgIcon: AppImages.refreshIcon,
               isCompact: true,
+              labelStyle: AppTextStyles.actionLabel,
               onPressed: onRestore,
             )
           else
@@ -59,6 +62,7 @@ class ShopActionsCard extends StatelessWidget {
               svgIcon: AppImages.restrictIcon,
               isDestructive: true,
               isExpanded: true,
+              labelStyle: AppTextStyles.actionLabel,
               onPressed: onRestrict,
             ),
           const SizedBox(height: 14),

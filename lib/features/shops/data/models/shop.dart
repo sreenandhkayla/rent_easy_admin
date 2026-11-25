@@ -1,10 +1,8 @@
+import '../../../../core/enums/payment_status.dart';
+import '../../../../core/enums/subscription_plan.dart';
 import '../../../../core/enums/subscription_status.dart';
 
-enum ShopPlan { basic, professional, premium }
-
 enum ShopStatus { active, restricted }
-
-enum PaymentStatus { verified, pending, failed, none }
 
 class Shop {
   const Shop({
@@ -36,7 +34,7 @@ class Shop {
   final ShopStatus status;
   final DateTime registeredAt;
   final String? branchOf;
-  final ShopPlan? plan;
+  final SubscriptionPlan? plan;
   final DateTime? startedAt;
   final DateTime? expiresAt;
   final PaymentStatus lastPayment;
@@ -45,7 +43,14 @@ class Shop {
 
   String get city => location.split(',').last.trim();
 
-  Shop copyWith({ShopStatus? status}) => Shop(
+  Shop copyWith({
+    ShopStatus? status,
+    SubscriptionStatus? subscription,
+    SubscriptionPlan? plan,
+    DateTime? startedAt,
+    DateTime? expiresAt,
+    PaymentStatus? lastPayment,
+  }) => Shop(
     name: name,
     shopId: shopId,
     ownerName: ownerName,
@@ -53,13 +58,13 @@ class Shop {
     location: location,
     address: address,
     contact: contact,
-    subscription: subscription,
+    subscription: subscription ?? this.subscription,
     status: status ?? this.status,
     registeredAt: registeredAt,
     branchOf: branchOf,
-    plan: plan,
-    startedAt: startedAt,
-    expiresAt: expiresAt,
-    lastPayment: lastPayment,
+    plan: plan ?? this.plan,
+    startedAt: startedAt ?? this.startedAt,
+    expiresAt: expiresAt ?? this.expiresAt,
+    lastPayment: lastPayment ?? this.lastPayment,
   );
 }

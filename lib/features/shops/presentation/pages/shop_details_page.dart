@@ -82,9 +82,12 @@ class _ShopDetailsBody extends StatelessWidget {
 
   final ShopDetails details;
 
-  void _viewSubscription(BuildContext context) => context.showAppMessage(
-    AppStrings.sectionNotBuilt(ShopsStrings.subscriptionDetails),
-  );
+  Future<void> _viewSubscription(BuildContext context) async {
+    final ShopDetailsCubit cubit = context.read<ShopDetailsCubit>();
+    await Navigator.of(context)
+        .pushNamed(AppRoutes.subscriptionDetailsFor(details.shop.shopId));
+    cubit.load();
+  }
 
   void _viewOwner(BuildContext context) {
     final NavigatorState navigator = Navigator.of(context);

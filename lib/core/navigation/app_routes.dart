@@ -7,6 +7,8 @@ import '../../features/shop_owners/presentation/pages/owner_details_page.dart';
 import '../../features/shop_owners/presentation/pages/shop_owners_page.dart';
 import '../../features/shops/presentation/pages/shop_details_page.dart';
 import '../../features/shops/presentation/pages/shops_page.dart';
+import '../../features/subscriptions/presentation/pages/subscription_details_page.dart';
+import '../../features/subscriptions/presentation/pages/subscriptions_page.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -17,6 +19,17 @@ class AppRoutes {
   static const String shopOwners = '/shop-owners';
   static const String ownerDetails = '/shop-owners/details';
   static const String shops = '/shops';
+  static const String subscriptions = '/subscriptions';
+  static const String subscriptionDetails = '/subscriptions/details';
+  static final String shopSubscriptions = Uri(
+    path: subscriptions,
+    queryParameters: {'tab': 'shops'},
+  ).toString();
+
+  static String subscriptionDetailsFor(String shopId) => Uri(
+    path: subscriptionDetails,
+    queryParameters: {'id': shopId},
+  ).toString();
 
   static const String shopDetails = '/shops/details';
 
@@ -32,6 +45,19 @@ class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? login);
     switch (uri.path) {
+      case subscriptions:
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => SubscriptionsPage(
+            showShopSubscriptions: uri.queryParameters['tab'] == 'shops',
+          ),
+        );
+      case subscriptionDetails:
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) =>
+              SubscriptionDetailsPage(shopId: uri.queryParameters['id']),
+        );
       case shopDetails:
         return MaterialPageRoute<void>(
           settings: settings,

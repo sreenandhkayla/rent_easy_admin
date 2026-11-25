@@ -5,6 +5,7 @@ import '../../../../core/resources/strings/shops_strings.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_payment_pill.dart';
 import '../../../../core/widgets/app_detail_field.dart';
 import '../../../../core/widgets/app_responsive_grid.dart';
 import '../../../../core/widgets/app_subscription_pill.dart';
@@ -76,7 +77,7 @@ class ShopSubscriptionCard extends StatelessWidget {
               ),
               _PillField(
                 label: ShopsStrings.lastPayment,
-                pill: PaymentStatusPill(status: shop.lastPayment),
+                pill: AppPaymentPill(status: shop.lastPayment),
               ),
               AppDetailField(
                 label: ShopsStrings.startDate,

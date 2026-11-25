@@ -23,6 +23,7 @@ enum AdminSection {
   subscriptions(
     AppStrings.navSubscriptions,
     svgIcon: AppImages.subscriptionIcon,
+    route: AppRoutes.subscriptions,
   ),
   reportsAndComplaints(
     AppStrings.navReportsAndComplaints,

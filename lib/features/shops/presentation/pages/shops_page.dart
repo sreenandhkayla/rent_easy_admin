@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/resources/images/app_images.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
+import '../../../../core/utils/app_messenger.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
 import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -24,7 +26,11 @@ class ShopsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ShopsCubit(initialQuery: initialQuery)..load(),
-      child: BlocBuilder<ShopsCubit, ShopsState>(
+      child: BlocConsumer<ShopsCubit, ShopsState>(
+        listenWhen: (previous, current) =>
+            !previous.hasError && current.hasError && current.shops.isNotEmpty,
+        listener: (context, _) =>
+            context.showAppMessage(ShopsStrings.refreshError),
         builder: (context, state) {
           final ShopsCubit cubit = context.read<ShopsCubit>();
           final DateTime? updatedAt = state.updatedAt;
@@ -50,7 +56,17 @@ class ShopsPage extends StatelessWidget {
                         onDateChanged: cubit.filterByRegistrationDate,
                       ),
                       const SizedBox(height: 16),
-                      if (state.shops.isEmpty)
+                      if (state.shops.isEmpty && state.hasError)
+                        AppCard(
+                          child: AppEmptyState(
+                            icon: Icons.wifi_off_rounded,
+                            title: ShopsStrings.loadErrorTitle,
+                            message: AppStrings.checkConnection,
+                            actionLabel: AppStrings.retry,
+                            onAction: cubit.load,
+                          ),
+                        )
+                      else if (state.shops.isEmpty)
                         const AppCard(
                           child: AppEmptyState(
                             svgIcon: AppImages.inboxIcon,

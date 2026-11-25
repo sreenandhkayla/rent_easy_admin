@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/enums/registration_date_filter.dart';
+import '../../../../core/enums/subscription_plan.dart';
+import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
 import '../../../../core/widgets/app_dropdown.dart';
@@ -36,22 +38,6 @@ class _ShopsToolbarState extends State<ShopsToolbar> {
     text: widget.state.query,
   );
 
-  static String _subscriptionLabel(SubscriptionFilter filter) =>
-      switch (filter) {
-        SubscriptionFilter.all => ShopsStrings.allSubscriptions,
-        SubscriptionFilter.active => AppStrings.statusActive,
-        SubscriptionFilter.expiringSoon => AppStrings.statusExpiringSoon,
-        SubscriptionFilter.expired => AppStrings.statusExpired,
-        SubscriptionFilter.unsubscribed => AppStrings.statusUnsubscribed,
-      };
-
-  static String _planLabel(PlanFilter filter) => switch (filter) {
-    PlanFilter.all => ShopsStrings.allPlans,
-    PlanFilter.basic => ShopsStrings.basic,
-    PlanFilter.professional => ShopsStrings.professional,
-    PlanFilter.premium => ShopsStrings.premium,
-  };
-
   static String _statusLabel(ShopStatusFilter filter) => switch (filter) {
     ShopStatusFilter.all => ShopsStrings.allShopStatuses,
     ShopStatusFilter.active => AppStrings.statusActive,
@@ -84,13 +70,14 @@ class _ShopsToolbarState extends State<ShopsToolbar> {
           AppDropdown<SubscriptionFilter>(
             value: widget.state.subscriptionFilter,
             items: SubscriptionFilter.values,
-            labelOf: _subscriptionLabel,
+            labelOf: (filter) =>
+                filter.status?.label ?? ShopsStrings.allSubscriptions,
             onChanged: widget.onSubscriptionChanged,
           ),
           AppDropdown<PlanFilter>(
             value: widget.state.planFilter,
             items: PlanFilter.values,
-            labelOf: _planLabel,
+            labelOf: (filter) => filter.label,
             onChanged: widget.onPlanChanged,
           ),
           AppDropdown<ShopStatusFilter>(

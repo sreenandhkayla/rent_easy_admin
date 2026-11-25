@@ -206,21 +206,21 @@ class _ShopRow extends StatelessWidget {
             flex: _Columns.shopId,
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(shop.shopId, style: AppTextStyles.tableCellStrong),
+              child: Text(shop.shopId, style: AppTextStyles.tableCell),
             ),
           ),
           Expanded(
             flex: _Columns.owner,
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(shop.ownerName, style: AppTextStyles.tableCellStrong),
+              child: Text(shop.ownerName, style: AppTextStyles.tableCell),
             ),
           ),
           Expanded(
             flex: _Columns.location,
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(shop.location, style: AppTextStyles.tableCellStrong),
+              child: Text(shop.location, style: AppTextStyles.tableCell),
             ),
           ),
           Expanded(
@@ -229,7 +229,7 @@ class _ShopRow extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 ShopLabels.plan(shop.plan),
-                style: AppTextStyles.tableCellStrong,
+                style: AppTextStyles.tableCell,
               ),
             ),
           ),
@@ -248,7 +248,7 @@ class _ShopRow extends StatelessWidget {
                 expiresAt == null
                     ? ShopsStrings.emptyValue
                     : AppFormatters.date(expiresAt),
-                style: AppTextStyles.tableCellStrong,
+                style: AppTextStyles.tableCell,
               ),
             ),
           ),

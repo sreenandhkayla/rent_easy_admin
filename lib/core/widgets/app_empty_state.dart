@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_text_styles.dart';
 import 'app_icon_circle.dart';
+import 'app_secondary_button.dart';
 
 class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
@@ -10,12 +11,16 @@ class AppEmptyState extends StatelessWidget {
     this.icon,
     this.svgIcon,
     required this.message,
+    this.actionLabel,
+    this.onAction,
   });
 
   final IconData? icon;
   final String? svgIcon;
   final String title;
   final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +45,10 @@ class AppEmptyState extends StatelessWidget {
                 style: AppTextStyles.bodyCaption,
                 textAlign: TextAlign.center,
               ),
+              if (actionLabel != null) ...[
+                const SizedBox(height: 14),
+                AppSecondaryButton(label: actionLabel!, onPressed: onAction),
+              ],
             ],
           ),
         ),

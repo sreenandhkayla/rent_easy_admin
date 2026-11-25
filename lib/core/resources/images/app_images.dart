@@ -19,4 +19,7 @@ class AppImages {
   static const String refreshIcon = '$_icons/refresh-icon.svg';
   static const String inboxIcon = '$_icons/inbox-icon.svg';
   static const String branchIcon = '$_icons/branch-icon.svg';
+  static const String viewOwnerIcon = '$_icons/view-owner-icon.svg';
+  static const String shieldIcon = '$_icons/shield-icon.svg';
+  static const String rightMarkIcon = '$_icons/right-mark-icon.svg';
 }
