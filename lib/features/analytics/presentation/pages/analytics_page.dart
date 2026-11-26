@@ -71,11 +71,6 @@ class AnalyticsPage extends StatelessWidget {
                       AnalyticsTrendsGrid(state: state),
                       const SizedBox(height: 16),
                       AnalyticsBreakdownGrid(snapshot: snapshot),
-                      const SizedBox(height: 20),
-                      const Text(
-                        AnalyticsStrings.footnote,
-                        style: AppTextStyles.meta,
-                      ),
                     ],
                   ),
           );

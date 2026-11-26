@@ -72,11 +72,6 @@ class DashboardPage extends StatelessWidget {
                         summary: summary,
                         onOpenSection: openSection,
                       ),
-                      const SizedBox(height: 28),
-                      const Text(
-                        DashboardStrings.sampleDataNote,
-                        style: AppTextStyles.meta,
-                      ),
                     ],
                   ),
           );
