@@ -5,8 +5,33 @@ import '../../data/notifications_mock_data.dart';
 import 'create_notification_state.dart';
 
 class CreateNotificationCubit extends Cubit<CreateNotificationState> {
-  CreateNotificationCubit()
-    : super(CreateNotificationState(updatedAt: DateTime.now()));
+  factory CreateNotificationCubit({String? draftId}) {
+    final AdminNotification? found = draftId == null
+        ? null
+        : NotificationsMockData.notification(draftId);
+    return CreateNotificationCubit._(
+      found?.status == NotificationStatus.draft ? found : null,
+    );
+  }
+
+  CreateNotificationCubit._(this.draft) : super(_initial(draft));
+
+  final AdminNotification? draft;
+
+  bool get isEditing => draft != null;
+
+  static CreateNotificationState _initial(AdminNotification? draft) {
+    final CreateNotificationState blank = CreateNotificationState(
+      updatedAt: DateTime.now(),
+    );
+    if (draft == null) return blank;
+    return blank.copyWith(
+      type: draft.type,
+      title: draft.title,
+      message: draft.message,
+      audience: draft.audience,
+    );
+  }
 
   void refresh() => emit(state.copyWith(updatedAt: DateTime.now()));
 
@@ -57,15 +82,17 @@ class CreateNotificationCubit extends Cubit<CreateNotificationState> {
   AdminNotification _store(NotificationStatus status, {required String actor}) {
     final DateTime now = DateTime.now();
     final int? owners = reach.owners;
+    final AdminNotification? existing = draft;
     final AdminNotification notification = AdminNotification(
-      notificationId: NotificationsMockData.nextId(),
+      notificationId:
+          existing?.notificationId ?? NotificationsMockData.nextId(),
       title: state.title.trim(),
       message: state.message.trim(),
-      createdBy: actor,
+      createdBy: existing?.createdBy ?? actor,
       type: state.type,
       audience: state.audience,
       status: status,
-      createdAt: now,
+      createdAt: existing?.createdAt ?? now,
       sendAt: switch (status) {
         NotificationStatus.sent => now,
         NotificationStatus.scheduled => state.scheduledAt,
@@ -74,7 +101,11 @@ class CreateNotificationCubit extends Cubit<CreateNotificationState> {
       delivered: status == NotificationStatus.sent ? owners : null,
       recipients: owners,
     );
-    NotificationsMockData.add(notification);
+    if (existing == null) {
+      NotificationsMockData.add(notification);
+    } else {
+      NotificationsMockData.replace(notification);
+    }
     return notification;
   }
 }

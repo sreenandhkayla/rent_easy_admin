@@ -17,7 +17,9 @@ import '../widgets/notification_form_card.dart';
 import '../widgets/notification_preview_card.dart';
 
 class CreateNotificationPage extends StatelessWidget {
-  const CreateNotificationPage({super.key});
+  const CreateNotificationPage({super.key, this.notificationId});
+
+  final String? notificationId;
 
   static const double _twoColumnBreakpoint = 1000;
 
@@ -59,7 +61,9 @@ class CreateNotificationPage extends StatelessWidget {
         .saveDraft(actor: AdminProfile.current.name);
     if (draft == null) return;
     context.showAppMessage(
-      NotificationsStrings.draftSnack(draft.notificationId),
+      context.read<CreateNotificationCubit>().isEditing
+          ? NotificationsStrings.draftUpdatedSnack(draft.notificationId)
+          : NotificationsStrings.draftSnack(draft.notificationId),
     );
     _backToList(context, saved: true);
   }
@@ -115,7 +119,7 @@ class CreateNotificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CreateNotificationCubit(),
+      create: (_) => CreateNotificationCubit(draftId: notificationId),
       child: BlocBuilder<CreateNotificationCubit, CreateNotificationState>(
         builder: (context, state) {
           final CreateNotificationCubit cubit = context
@@ -140,15 +144,23 @@ class CreateNotificationPage extends StatelessWidget {
           return AdminShell(
             section: AdminSection.notifications,
             isSectionRoot: false,
-            title: NotificationsStrings.createNotification,
-            subtitle: NotificationsStrings.createSubtitle,
+            title: cubit.isEditing
+                ? NotificationsStrings.editNotification
+                : NotificationsStrings.createNotification,
+            subtitle: cubit.isEditing
+                ? NotificationsStrings.editSubtitle
+                : NotificationsStrings.createSubtitle,
             breadcrumb: AppBreadcrumbs(
               items: [
                 AppBreadcrumb(
                   NotificationsStrings.title,
                   onTap: () => _backToList(context),
                 ),
-                const AppBreadcrumb(NotificationsStrings.createNotification),
+                AppBreadcrumb(
+                  cubit.isEditing
+                      ? NotificationsStrings.editNotification
+                      : NotificationsStrings.createNotification,
+                ),
               ],
             ),
             headerActions: [

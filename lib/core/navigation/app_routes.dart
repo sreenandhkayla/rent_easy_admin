@@ -54,6 +54,13 @@ class AppRoutes {
   ).toString();
   static const String notifications = '/notifications';
   static const String createNotification = '/notifications/create';
+  static const String editNotification = '/notifications/edit';
+
+  static String editNotificationFor(String notificationId) => Uri(
+    path: editNotification,
+    queryParameters: {'id': notificationId},
+  ).toString();
+
   static const String notificationDetails = '/notifications/details';
 
   static String notificationDetailsFor(String notificationId) => Uri(
@@ -158,6 +165,12 @@ class AppRoutes {
           builder: (_) => NotificationDetailsPage(
             notificationId: uri.queryParameters['id'],
           ),
+        );
+      case editNotification:
+        return AppPageRoute<void>(
+          settings: settings,
+          builder: (_) =>
+              CreateNotificationPage(notificationId: uri.queryParameters['id']),
         );
       case createNotification:
         return AppPageRoute<void>(

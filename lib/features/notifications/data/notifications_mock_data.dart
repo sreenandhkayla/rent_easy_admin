@@ -47,6 +47,13 @@ class NotificationsMockData {
     _notifications[index] = _notifications[index].toDraft();
   }
 
+  static void replace(AdminNotification notification) {
+    final int index = _notifications.indexWhere(
+      (item) => item.notificationId == notification.notificationId,
+    );
+    if (index >= 0) _notifications[index] = notification;
+  }
+
   static void add(AdminNotification notification) =>
       _notifications.add(notification);
 

@@ -10,6 +10,7 @@ class AppTextField extends StatefulWidget {
     super.key,
     required this.label,
     this.controller,
+    this.initialValue,
     this.hintText,
     this.errorText,
     this.helperText,
@@ -28,6 +29,7 @@ class AppTextField extends StatefulWidget {
 
   final String label;
   final TextEditingController? controller;
+  final String? initialValue;
   final String? hintText;
   final String? errorText;
   final String? helperText;
@@ -49,6 +51,16 @@ class AppTextField extends StatefulWidget {
 
 class _AppTextFieldState extends State<AppTextField> {
   late bool _isObscured = widget.obscureText;
+  late final TextEditingController? _ownController =
+      widget.controller == null && widget.initialValue != null
+      ? TextEditingController(text: widget.initialValue)
+      : null;
+
+  @override
+  void dispose() {
+    _ownController?.dispose();
+    super.dispose();
+  }
 
   void _toggleObscured() => setState(() => _isObscured = !_isObscured);
 
@@ -65,7 +77,7 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
         const SizedBox(height: 10),
         TextField(
-          controller: widget.controller,
+          controller: widget.controller ?? _ownController,
           obscureText: _isObscured,
           obscuringCharacter: '•',
           keyboardType: widget.keyboardType,

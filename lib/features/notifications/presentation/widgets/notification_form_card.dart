@@ -89,6 +89,7 @@ class NotificationFormCard extends StatelessWidget {
             label: NotificationsStrings.titleLabel,
             hintText: NotificationsStrings.titleHint,
             maxLength: titleMaxLength,
+            initialValue: state.title,
             errorText: state.showTitleError
                 ? NotificationsStrings.titleRequired
                 : null,
@@ -100,6 +101,7 @@ class NotificationFormCard extends StatelessWidget {
             label: NotificationsStrings.messageLabel,
             hintText: NotificationsStrings.messageHint,
             maxLength: messageMaxLength,
+            initialValue: state.message,
             minLines: 3,
             maxLines: 6,
             keyboardType: TextInputType.multiline,

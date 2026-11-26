@@ -104,6 +104,9 @@ class NotificationsStrings {
   static String sentSnack(String id) => '$id sent.';
   static String scheduledSnack(String id) => '$id scheduled.';
   static String draftSnack(String id) => '$id saved as a draft.';
+  static String draftUpdatedSnack(String id) => '$id draft updated.';
+  static const String editSubtitle =
+      'Update the draft, then save it or send it';
 
   static const String detailsSubtitle =
       'Notification details and delivery status';

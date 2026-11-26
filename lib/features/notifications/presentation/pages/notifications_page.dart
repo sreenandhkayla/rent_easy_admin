@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/notifications_strings.dart';
-import '../../../../core/utils/app_messenger.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
 import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_list_skeleton.dart';
@@ -17,9 +15,6 @@ import '../widgets/notifications_table.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
-
-  void _notBuilt(BuildContext context, String label) =>
-      context.showAppMessage(AppStrings.sectionNotBuilt(label));
 
   @override
   Widget build(BuildContext context) {
@@ -82,10 +77,14 @@ class NotificationsPage extends StatelessWidget {
                           );
                           cubit.syncNotifications();
                         },
-                        onEdit: (_) => _notBuilt(
-                          context,
-                          NotificationsStrings.editNotification,
-                        ),
+                        onEdit: (notification) async {
+                          await Navigator.of(context).pushNamed(
+                            AppRoutes.editNotificationFor(
+                              notification.notificationId,
+                            ),
+                          );
+                          cubit.syncNotifications();
+                        },
                       ),
                     ],
                   ),
