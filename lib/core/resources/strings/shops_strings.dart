@@ -19,6 +19,8 @@ class ShopsStrings {
   static const String expiry = 'Expiry';
   static const String shopStatus = 'Shop status';
   static const String mainShop = 'Main shop';
+  static const String notAvailable = 'N/A';
+  static const String unnamedOwner = 'Unnamed owner';
   static const String emptyValue = '—';
 
   static const String noShopsTitle = 'No shops yet';
@@ -105,10 +107,14 @@ class ShopsStrings {
 
   static String branchOf(String shopName) => 'Branch of $shopName';
 
+  static String perPage(int size) => '$size per page';
+
+  static String archivedPlan(String name) => '$name (archived)';
+
   static String showingRange(int start, int end, int total, int platform) {
     final String range = total == 0
-        ? 'Showing 0 of 0 sample records'
-        : 'Showing $start–$end of $total sample records';
+        ? 'Showing 0 of 0 shops'
+        : 'Showing $start–$end of ${AppFormatters.number(total)} shops';
     return '$range · ${AppFormatters.number(platform)} shops on platform';
   }
 }

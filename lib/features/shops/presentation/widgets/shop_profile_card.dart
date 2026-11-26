@@ -65,7 +65,10 @@ class ShopProfileCard extends StatelessWidget {
               ),
               AppDetailField(
                 label: ShopsStrings.registrationDate,
-                value: AppFormatters.date(shop.registeredAt),
+                value: switch (shop.registeredAt) {
+                  final DateTime date => AppFormatters.date(date),
+                  null => ShopsStrings.emptyValue,
+                },
               ),
             ],
           ),

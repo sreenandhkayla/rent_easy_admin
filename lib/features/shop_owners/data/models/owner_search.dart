@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/data/prefix_search.dart';
 import 'shop_owner.dart';
 
 class OwnerSearchQuery {
@@ -25,7 +26,7 @@ class OwnerIdSearch {
   final String term;
 
   bool matches(ShopOwner owner) =>
-      owner.ownerId.toLowerCase().startsWith(term.toLowerCase());
+      PrefixSearch.startsWithIgnoringCase(owner.ownerId, term);
 
   @override
   bool operator ==(Object other) =>
@@ -36,16 +37,17 @@ class OwnerIdSearch {
 }
 
 abstract final class OwnerSearch {
-  static const int minLength = 2;
-  static const int maxCaseInsensitiveLetters = 4;
+  static const int minLength = PrefixSearch.minLength;
+  static const int maxCaseInsensitiveLetters =
+      PrefixSearch.maxCaseInsensitiveLetters;
   static const String _countryCode = '91';
   static const int _localPhoneLength = 10;
   static final RegExp _phonePattern = RegExp(r'^[+\d\s-]+$');
   static final RegExp _nonDigits = RegExp(r'\D');
 
-  static String normalize(String term) => term.trim();
+  static String normalize(String term) => PrefixSearch.normalize(term);
 
-  static bool isActive(String term) => normalize(term).length >= minLength;
+  static bool isActive(String term) => PrefixSearch.isActive(term);
 
   static bool _isPhone(String text) =>
       _phonePattern.hasMatch(text) &&
@@ -62,7 +64,7 @@ abstract final class OwnerSearch {
     }
     return OwnerSearchQuery(
       field: ShopOwner.nameField,
-      prefixes: _nameVariants(text).toList(),
+      prefixes: PrefixSearch.nameVariants(text),
     );
   }
 
@@ -71,17 +73,10 @@ abstract final class OwnerSearch {
     if (text.length < minLength || text.contains(' ') || _isPhone(text)) {
       return null;
     }
-    int letters = 0;
-    int end = 0;
-    while (end < text.length) {
-      if (_isLetter(text[end])) {
-        if (letters == maxCaseInsensitiveLetters) break;
-        letters++;
-      }
-      end++;
-    }
     return OwnerIdSearch(
-      prefixes: _caseVariants(text.substring(0, end)),
+      prefixes: PrefixSearch.caseVariants(
+        PrefixSearch.caseInsensitivePrefix(text),
+      ),
       term: text,
     );
   }
@@ -92,33 +87,5 @@ abstract final class OwnerSearch {
         text.startsWith('+') ||
         (digits.length > _localPhoneLength && digits.startsWith(_countryCode));
     return hasCountryCode ? '+$digits' : '+$_countryCode$digits';
-  }
-
-  static Set<String> _nameVariants(String text) => {
-    text,
-    text.toLowerCase(),
-    text
-        .split(RegExp(r'\s+'))
-        .map(
-          (word) => word.isEmpty
-              ? word
-              : word[0].toUpperCase() + word.substring(1).toLowerCase(),
-        )
-        .join(' '),
-  };
-
-  static bool _isLetter(String char) =>
-      char.toLowerCase() != char.toUpperCase();
-
-  static List<String> _caseVariants(String text) {
-    List<String> variants = [''];
-    for (final String char in text.split('')) {
-      final Set<String> options = {char.toLowerCase(), char.toUpperCase()};
-      variants = [
-        for (final String variant in variants)
-          for (final String option in options) '$variant$option',
-      ];
-    }
-    return variants;
   }
 }

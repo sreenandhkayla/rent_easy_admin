@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fpdart/fpdart.dart';
 
+import '../../../../core/data/cursor_pager.dart';
 import '../../../../core/data/firestore_failures.dart';
+import '../../../../core/data/prefix_search.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../models/owner_details.dart';
@@ -15,32 +17,16 @@ typedef OwnerDocument = ({
   List<LinkedShop> shops,
 });
 
-typedef OwnerPageResult = ({
-  List<ShopOwner> owners,
-  DocumentSnapshot<Map<String, dynamic>>? last,
-  bool hasMore,
-});
-
 class ShopOwnersRemoteDataSource {
   const ShopOwnersRemoteDataSource(this._firestore);
 
   static const String _collection = 'users';
   static const int _ownerIdLimit = 10;
-  static const String _prefixEnd = '';
 
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection(_collection);
-
-  Filter _startsWithAny(String field, List<String> prefixes) => prefixes
-      .map(
-        (prefix) => Filter.and(
-          Filter(field, isGreaterThanOrEqualTo: prefix),
-          Filter(field, isLessThan: '$prefix$_prefixEnd'),
-        ),
-      )
-      .reduce(Filter.or);
 
   List<Filter> _statusFilters(OwnerStatusFilter status) => switch (status) {
     OwnerStatusFilter.all => const [],
@@ -61,7 +47,8 @@ class ShopOwnersRemoteDataSource {
     final OwnerSearchQuery? search = query.search;
     final DateTime? since = query.registeredSince;
     final List<Filter> filters = [
-      if (search != null) _startsWithAny(search.field, search.prefixes),
+      if (search != null)
+        PrefixSearch.startsWithAny(search.field, search.prefixes),
       ..._statusFilters(query.status),
       if (since != null)
         Filter(
@@ -80,7 +67,7 @@ class ShopOwnersRemoteDataSource {
           );
   }
 
-  Future<Either<Failure, OwnerPageResult>> fetchPage(
+  Future<Either<Failure, CursorPage<ShopOwner>>> fetchPage(
     OwnerListQuery query, {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
   }) => _read(() async {
@@ -88,7 +75,7 @@ class ShopOwnersRemoteDataSource {
     if (startAfter != null) page = page.startAfterDocument(startAfter);
     final snapshot = await page.get();
     return (
-      owners: [
+      items: [
         for (final document in snapshot.docs)
           ShopOwner.fromDocument(document.id, document.data()),
       ],
@@ -106,7 +93,9 @@ class ShopOwnersRemoteDataSource {
     OwnerIdSearch search,
   ) => _read(() async {
     final snapshot = await _users
-        .where(_startsWithAny(ShopOwner.userIdField, search.prefixes))
+        .where(
+          PrefixSearch.startsWithAny(ShopOwner.userIdField, search.prefixes),
+        )
         .limit(_ownerIdLimit)
         .get();
     return [

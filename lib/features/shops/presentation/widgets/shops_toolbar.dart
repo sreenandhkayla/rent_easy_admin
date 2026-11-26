@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/enums/registration_date_filter.dart';
-import '../../../../core/enums/subscription_plan.dart';
 import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_search_field.dart';
+import '../../../subscriptions/data/models/plan_definition.dart';
 import '../state/shops_state.dart';
 
 class ShopsToolbar extends StatefulWidget {
@@ -24,7 +24,7 @@ class ShopsToolbar extends StatefulWidget {
   final ShopsState state;
   final ValueChanged<String> onSearch;
   final ValueChanged<SubscriptionFilter> onSubscriptionChanged;
-  final ValueChanged<PlanFilter> onPlanChanged;
+  final ValueChanged<String?> onPlanChanged;
   final ValueChanged<ShopStatusFilter> onStatusChanged;
   final ValueChanged<RegistrationDateFilter> onDateChanged;
 
@@ -41,6 +41,14 @@ class _ShopsToolbarState extends State<ShopsToolbar> {
     ShopStatusFilter.all => ShopsStrings.allShopStatuses,
     ShopStatusFilter.active => AppStrings.statusActive,
     ShopStatusFilter.restricted => AppStrings.statusRestricted,
+  };
+
+  static String _planLabel(PlanDefinition? plan) => switch (plan) {
+    null => AppStrings.allPlans,
+    PlanDefinition(isArchived: true, :final name) => ShopsStrings.archivedPlan(
+      name,
+    ),
+    PlanDefinition(:final name) => name,
   };
 
   @override
@@ -73,11 +81,11 @@ class _ShopsToolbarState extends State<ShopsToolbar> {
                 filter.status?.label ?? ShopsStrings.allSubscriptions,
             onChanged: widget.onSubscriptionChanged,
           ),
-          AppDropdown<PlanFilter>(
-            value: widget.state.planFilter,
-            items: PlanFilter.values,
-            labelOf: (filter) => filter.label,
-            onChanged: widget.onPlanChanged,
+          AppDropdown<PlanDefinition?>(
+            value: widget.state.selectedPlan,
+            items: [null, ...widget.state.plans],
+            labelOf: _planLabel,
+            onChanged: (plan) => widget.onPlanChanged(plan?.id),
           ),
           AppDropdown<ShopStatusFilter>(
             value: widget.state.statusFilter,

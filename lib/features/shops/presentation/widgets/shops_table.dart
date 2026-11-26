@@ -8,7 +8,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_access_status_pill.dart';
+import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_pagination.dart';
 import '../../../../core/widgets/app_secondary_button.dart';
@@ -25,6 +27,8 @@ class ShopsTable extends StatelessWidget {
     required this.state,
     required this.onSort,
     required this.onPageChanged,
+    required this.onPageSizeChanged,
+    required this.onRetry,
     required this.onView,
   });
 
@@ -33,15 +37,38 @@ class ShopsTable extends StatelessWidget {
   final ShopsState state;
   final ValueChanged<ShopSortField> onSort;
   final ValueChanged<int> onPageChanged;
+  final ValueChanged<int> onPageSizeChanged;
+  final VoidCallback onRetry;
   final ValueChanged<Shop> onView;
+
+  static const double _progressHeight = 2;
+
+  Widget? _placeholder(List<Shop> rows) {
+    final String? error = state.errorMessage;
+    if (error != null) {
+      return AppEmptyState(
+        icon: Icons.error_outline_rounded,
+        title: ShopsStrings.loadErrorTitle,
+        message: error,
+        actionLabel: AppStrings.retry,
+        onAction: onRetry,
+      );
+    }
+    if (rows.isEmpty && !state.isLoading) {
+      return const AppEmptyState(
+        icon: Icons.search,
+        title: ShopsStrings.noMatchesTitle,
+        message: ShopsStrings.noMatchesMessage,
+      );
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Shop> rows = state.pageShops;
-    final int total = state.filteredShops.length;
-    final int start = total == 0
-        ? 0
-        : (state.page - 1) * ShopsState.pageSize + 1;
+    final List<Shop> rows = state.visibleRows;
+    final int total = state.totalCount;
+    final int start = rows.isEmpty ? 0 : state.firstRowNumber;
     final int end = start == 0 ? 0 : start + rows.length - 1;
     return AppCard(
       padding: EdgeInsets.zero,
@@ -57,14 +84,19 @@ class ShopsTable extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _HeaderRow(state: state, onSort: onSort),
-                    if (rows.isEmpty)
-                      const AppEmptyState(
-                        icon: Icons.search,
-                        title: ShopsStrings.noMatchesTitle,
-                        message: ShopsStrings.noMatchesMessage,
-                      ),
-                    for (final Shop shop in rows)
-                      _ShopRow(shop: shop, onView: () => onView(shop)),
+                    SizedBox(
+                      height: _progressHeight,
+                      child: state.isLoading
+                          ? const LinearProgressIndicator(
+                              minHeight: _progressHeight,
+                            )
+                          : null,
+                    ),
+                    if (_placeholder(rows) case final Widget placeholder)
+                      placeholder
+                    else
+                      for (final Shop shop in rows)
+                        _ShopRow(shop: shop, onView: () => onView(shop)),
                   ],
                 ),
               ),
@@ -87,10 +119,23 @@ class ShopsTable extends StatelessWidget {
                   ),
                   style: AppTextStyles.bodyCaption,
                 ),
-                AppPagination(
-                  currentPage: state.page,
-                  pageCount: state.pageCount,
-                  onPageChanged: onPageChanged,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    AppDropdown<int>(
+                      value: state.pageSize,
+                      items: ShopsState.pageSizes,
+                      labelOf: ShopsStrings.perPage,
+                      onChanged: onPageSizeChanged,
+                    ),
+                    AppPagination(
+                      currentPage: state.page,
+                      pageCount: state.pageCount,
+                      onPageChanged: onPageChanged,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -102,15 +147,16 @@ class ShopsTable extends StatelessWidget {
 }
 
 class _Columns {
-  static const int name = 21;
-  static const int shopId = 9;
-  static const int owner = 15;
+  static const int name = 17;
+  static const int shopId = 14;
+  static const int owner = 14;
   static const int location = 15;
   static const int plan = 11;
   static const int subscription = 11;
   static const int expiry = 11;
   static const int status = 9;
   static const double action = 72;
+  static const double shopIdGap = 20;
 }
 
 class _HeaderRow extends StatelessWidget {
@@ -135,7 +181,13 @@ class _HeaderRow extends StatelessWidget {
               onTap: () => onSort(ShopSortField.name),
             ),
           ),
-          Expanded(flex: _Columns.shopId, child: plain(ShopsStrings.shopId)),
+          Expanded(
+            flex: _Columns.shopId,
+            child: Padding(
+              padding: const EdgeInsets.only(right: _Columns.shopIdGap),
+              child: plain(ShopsStrings.shopId),
+            ),
+          ),
           Expanded(flex: _Columns.owner, child: plain(ShopsStrings.owner)),
           Expanded(
             flex: _Columns.location,
@@ -190,7 +242,10 @@ class _ShopRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(shop.name, style: AppTextStyles.tableCellStrong),
+                  Text(
+                    shop.name.isEmpty ? ShopsStrings.emptyValue : shop.name,
+                    style: AppTextStyles.tableCellStrong,
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     branchOf == null
@@ -205,7 +260,7 @@ class _ShopRow extends StatelessWidget {
           Expanded(
             flex: _Columns.shopId,
             child: Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: _Columns.shopIdGap),
               child: Text(shop.shopId, style: AppTextStyles.tableCell),
             ),
           ),
@@ -213,14 +268,22 @@ class _ShopRow extends StatelessWidget {
             flex: _Columns.owner,
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(shop.ownerName, style: AppTextStyles.tableCell),
+              child: Text(
+                shop.ownerName.isEmpty
+                    ? ShopsStrings.unnamedOwner
+                    : shop.ownerName,
+                style: AppTextStyles.tableCell,
+              ),
             ),
           ),
           Expanded(
             flex: _Columns.location,
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(shop.location, style: AppTextStyles.tableCell),
+              child: Text(
+                shop.location.isEmpty ? ShopsStrings.emptyValue : shop.location,
+                style: AppTextStyles.tableCell,
+              ),
             ),
           ),
           Expanded(
@@ -228,7 +291,7 @@ class _ShopRow extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Text(
-                ShopLabels.plan(shop.plan),
+                ShopLabels.plan(shop),
                 style: AppTextStyles.tableCell,
               ),
             ),
@@ -237,7 +300,15 @@ class _ShopRow extends StatelessWidget {
             flex: _Columns.subscription,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: AppSubscriptionPill(status: shop.subscription),
+              child: switch (shop.subscription) {
+                final SubscriptionStatus status => AppSubscriptionPill(
+                  status: status,
+                ),
+                null => const Text(
+                  ShopsStrings.notAvailable,
+                  style: AppTextStyles.tableCell,
+                ),
+              },
             ),
           ),
           Expanded(

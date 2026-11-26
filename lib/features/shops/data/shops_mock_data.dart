@@ -74,7 +74,7 @@ class ShopsMockData {
     final ShopActivity registered = ShopActivity(
       title: 'Shop registered via Owner App',
       actor: 'System',
-      at: shop.registeredAt,
+      at: shop.registeredAt ?? DateTime(2025),
       hasTime: false,
     );
     final DateTime? expiresAt = shop.expiresAt;
@@ -91,7 +91,9 @@ class ShopsMockData {
         ShopActivity(
           title: 'Restricted shop',
           actor: 'Meera Suresh',
-          at: shop.registeredAt.add(const Duration(days: 45, hours: 10)),
+          at: (shop.registeredAt ?? DateTime(2025)).add(
+            const Duration(days: 45, hours: 10),
+          ),
           reason: 'Pending document verification',
           isHighlighted: true,
         ),

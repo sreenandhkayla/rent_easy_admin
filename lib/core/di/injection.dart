@@ -7,6 +7,9 @@ import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/auth/presentation/state/admin_session_cubit.dart';
 import '../../features/auth/presentation/state/auth_cubit.dart';
 import '../../features/shop_owners/data/datasources/shop_owners_remote_data_source.dart';
+import '../../features/shops/data/datasources/shops_remote_data_source.dart';
+import '../../features/shops/data/repositories/shops_repository.dart';
+import '../../features/shops/presentation/state/shops_cubit.dart';
 import '../../features/subscriptions/data/datasources/plans_remote_data_source.dart';
 import '../../features/subscriptions/data/repositories/plans_repository.dart';
 import '../../features/subscriptions/presentation/state/create_plan_cubit.dart';
@@ -30,6 +33,9 @@ void configureDependencies() {
     )
     ..registerLazySingleton<ShopOwnersRemoteDataSource>(
       () => ShopOwnersRemoteDataSource(FirebaseFirestore.instance),
+    )
+    ..registerLazySingleton<ShopsRemoteDataSource>(
+      () => ShopsRemoteDataSource(FirebaseFirestore.instance),
     )
     ..registerLazySingleton<PlansRemoteDataSource>(
       () => PlansRemoteDataSource(
@@ -55,6 +61,16 @@ void configureDependencies() {
     )
     ..registerFactory<ShopOwnersCubit>(
       () => ShopOwnersCubit(getIt<ShopOwnersRepository>()),
+    )
+    ..registerFactory<ShopsRepository>(
+      () => ShopsRepository(
+        getIt<ShopsRemoteDataSource>(),
+        getIt<PlansRepository>(),
+      ),
+    )
+    ..registerFactoryParam<ShopsCubit, String, void>(
+      (initialQuery, _) =>
+          ShopsCubit(getIt<ShopsRepository>(), initialQuery: initialQuery),
     )
     ..registerFactoryParam<SubscriptionsCubit, SubscriptionsTab, void>(
       (tab, _) => SubscriptionsCubit(getIt<PlansRepository>(), initialTab: tab),

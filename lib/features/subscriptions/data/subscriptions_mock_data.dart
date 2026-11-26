@@ -1,5 +1,6 @@
 import '../../../core/enums/payment_status.dart';
 import '../../../core/enums/subscription_plan.dart';
+import '../../../core/enums/subscription_status.dart';
 import '../../shops/data/models/shop.dart';
 import '../../shops/data/shops_mock_data.dart';
 import 'models/payment_attempt.dart';
@@ -276,7 +277,7 @@ class SubscriptionsMockData {
     shopId: shop.shopId,
     ownerName: shop.ownerName,
     ownerId: shop.ownerId,
-    status: shop.subscription,
+    status: shop.subscription ?? SubscriptionStatus.unsubscribed,
     payment: shop.lastPayment,
     plan: shop.plan,
     startedAt: shop.startedAt,

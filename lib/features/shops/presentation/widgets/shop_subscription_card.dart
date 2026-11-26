@@ -32,6 +32,7 @@ class ShopSubscriptionCard extends StatelessWidget {
       SubscriptionStatus.expiringSoon => ShopsStrings.allowed,
       SubscriptionStatus.expired ||
       SubscriptionStatus.unsubscribed => ShopsStrings.restricted,
+      null => ShopsStrings.emptyValue,
     };
   }
 
@@ -69,11 +70,19 @@ class ShopSubscriptionCard extends StatelessWidget {
             children: [
               AppDetailField(
                 label: ShopsStrings.currentPlan,
-                value: ShopLabels.plan(shop.plan),
+                value: ShopLabels.plan(shop),
               ),
               _PillField(
                 label: ShopsStrings.status,
-                pill: AppSubscriptionPill(status: shop.subscription),
+                pill: switch (shop.subscription) {
+                  final SubscriptionStatus status => AppSubscriptionPill(
+                    status: status,
+                  ),
+                  null => const Text(
+                    ShopsStrings.notAvailable,
+                    style: AppTextStyles.tableCell,
+                  ),
+                },
               ),
               _PillField(
                 label: ShopsStrings.lastPayment,

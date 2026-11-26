@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/enums/subscription_status.dart';
+
 import '../../../../core/resources/images/app_images.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -110,7 +112,8 @@ class _BranchTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            AppSubscriptionPill(status: shop.subscription),
+            if (shop.subscription case final SubscriptionStatus status)
+              AppSubscriptionPill(status: status),
             const SizedBox(width: 12),
             const Icon(
               Icons.chevron_right,
