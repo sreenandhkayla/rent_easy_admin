@@ -4,13 +4,13 @@ import '../../resources/strings/app_strings.dart';
 import '../../theme/app_text_styles.dart';
 import '../app_icon_circle_button.dart';
 import '../app_initials_avatar.dart';
-import 'admin_section.dart';
 
 class AdminTopBar extends StatelessWidget {
   const AdminTopBar({
     super.key,
     required this.title,
     required this.subtitle,
+    required this.profileName,
     this.breadcrumb,
     required this.onNotifications,
     this.actions = const [],
@@ -19,6 +19,7 @@ class AdminTopBar extends StatelessWidget {
 
   final String title;
   final String subtitle;
+  final String profileName;
   final Widget? breadcrumb;
   final List<Widget> actions;
   final VoidCallback onNotifications;
@@ -58,8 +59,8 @@ class AdminTopBar extends StatelessWidget {
               onPressed: onNotifications,
             ),
             Tooltip(
-              message: AdminProfile.current.name,
-              child: AppInitialsAvatar(name: AdminProfile.current.name),
+              message: profileName,
+              child: AppInitialsAvatar(name: profileName),
             ),
           ],
         ),

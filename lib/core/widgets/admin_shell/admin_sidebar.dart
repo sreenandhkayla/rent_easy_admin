@@ -14,21 +14,25 @@ import 'admin_section.dart';
 class AdminSidebar extends StatelessWidget {
   const AdminSidebar({
     super.key,
+    required this.sections,
     required this.selected,
     required this.isCollapsed,
     required this.badgeCounts,
     required this.onToggleCollapsed,
     required this.onSelect,
     required this.onLogout,
+    required this.profileName,
     required this.profileRole,
   });
 
+  final List<AdminSection> sections;
   final AdminSection selected;
   final bool isCollapsed;
   final Map<AdminSection, int> badgeCounts;
   final VoidCallback onToggleCollapsed;
   final ValueChanged<AdminSection> onSelect;
   final VoidCallback onLogout;
+  final String profileName;
   final String profileRole;
 
   @override
@@ -71,8 +75,7 @@ class AdminSidebar extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (final AdminSection section
-                              in AdminSection.values)
+                          for (final AdminSection section in sections)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: AppSidebarItem(
@@ -89,7 +92,11 @@ class AdminSidebar extends StatelessWidget {
                     ),
                   ),
                   const Divider(height: 32, color: AppColors.divider),
-                  _ProfileTile(compact: compact, role: profileRole),
+                  _ProfileTile(
+                    compact: compact,
+                    name: profileName,
+                    role: profileRole,
+                  ),
                   const SizedBox(height: 8),
                   AppSidebarItem(
                     icon: Icons.logout,
@@ -156,17 +163,21 @@ class _SidebarHeader extends StatelessWidget {
 }
 
 class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({required this.compact, required this.role});
+  const _ProfileTile({
+    required this.compact,
+    required this.name,
+    required this.role,
+  });
 
   final bool compact;
+  final String name;
   final String role;
 
   @override
   Widget build(BuildContext context) {
-    const AdminProfile profile = AdminProfile.current;
-    final Widget avatar = AppInitialsAvatar(name: profile.name);
+    final Widget avatar = AppInitialsAvatar(name: name);
     if (compact) {
-      return Tooltip(message: profile.name, child: avatar);
+      return Tooltip(message: name, child: avatar);
     }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -178,7 +189,7 @@ class _ProfileTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile.name, style: AppTextStyles.titleSmall),
+                Text(name, style: AppTextStyles.titleSmall),
                 Text(role, style: AppTextStyles.meta),
               ],
             ),

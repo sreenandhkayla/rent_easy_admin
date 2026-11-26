@@ -93,6 +93,7 @@ class _AppTextFieldState extends State<AppTextField> {
           decoration: InputDecoration(
             hintText: widget.hintText,
             errorText: widget.errorText,
+            errorMaxLines: 3,
             helperText: widget.helperText,
             helperStyle: AppTextStyles.bodyCaption,
             helperMaxLines: 3,

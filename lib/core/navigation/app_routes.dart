@@ -25,6 +25,7 @@ import '../../features/subscriptions/presentation/pages/plan_details_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_details_page.dart';
 import '../../features/subscriptions/presentation/pages/subscriptions_page.dart';
 import '../../features/subscriptions/presentation/state/subscriptions_state.dart';
+import '../widgets/admin_shell/admin_section.dart';
 import 'app_page_route.dart';
 
 class AppRoutes {
@@ -121,12 +122,43 @@ class AppRoutes {
   static String ownerDetailsFor(String ownerId) =>
       Uri(path: ownerDetails, queryParameters: {'id': ownerId}).toString();
 
+  static final Map<String, AdminSection> _sections = {
+    dashboard: AdminSection.dashboard,
+    shopOwners: AdminSection.shopOwners,
+    ownerDetails: AdminSection.shopOwners,
+    shops: AdminSection.shopsAndBranches,
+    shopDetails: AdminSection.shopsAndBranches,
+    subscriptions: AdminSection.subscriptions,
+    subscriptionDetails: AdminSection.subscriptions,
+    createPlan: AdminSection.subscriptions,
+    planDetails: AdminSection.subscriptions,
+    paymentDetails: AdminSection.subscriptions,
+    reports: AdminSection.reportsAndComplaints,
+    reportDetails: AdminSection.reportsAndComplaints,
+    analytics: AdminSection.analyticsAndReports,
+    notifications: AdminSection.notifications,
+    createNotification: AdminSection.notifications,
+    editNotification: AdminSection.notifications,
+    notificationDetails: AdminSection.notifications,
+    settings: AdminSection.settings,
+    addAdmin: AdminSection.settings,
+    editProfile: AdminSection.settings,
+    manageAdmin: AdminSection.settings,
+  };
+
+  static AdminSection? _sectionFor(String path) => _sections[path];
+
+  static List<Route<dynamic>> onGenerateInitialRoutes(String initialRoute) => [
+    onGenerateRoute(RouteSettings(name: initialRoute)),
+  ];
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final Uri uri = Uri.parse(settings.name ?? login);
     switch (uri.path) {
       case subscriptions:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => SubscriptionsPage(
             initialTab: switch (uri.queryParameters['tab']) {
               'shops' => SubscriptionsTab.shopSubscriptions,
@@ -140,28 +172,33 @@ class AppRoutes {
       case paymentDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) =>
               PaymentDetailsPage(transactionId: uri.queryParameters['id']),
         );
       case planDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => PlanDetailsPage(planId: uri.queryParameters['id']),
         );
       case createPlan:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const CreatePlanPage(),
         );
       case subscriptionDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) =>
               SubscriptionDetailsPage(shopId: uri.queryParameters['id']),
         );
       case notificationDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => NotificationDetailsPage(
             notificationId: uri.queryParameters['id'],
           ),
@@ -169,37 +206,44 @@ class AppRoutes {
       case editNotification:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) =>
               CreateNotificationPage(notificationId: uri.queryParameters['id']),
         );
       case createNotification:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const CreateNotificationPage(),
         );
       case notifications:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const NotificationsPage(),
         );
       case manageAdmin:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => ManageAdminPage(adminId: uri.queryParameters['id']),
         );
       case editProfile:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const EditProfilePage(),
         );
       case addAdmin:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const AddAdminPage(),
         );
       case AppRoutes.settings:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => SettingsPage(
             initialTab: switch (uri.queryParameters['tab']) {
               'staff' => SettingsTab.adminStaff,
@@ -213,17 +257,20 @@ class AppRoutes {
       case analytics:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const AnalyticsPage(),
         );
       case reportDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) =>
               ReportDetailsPage(reportId: uri.queryParameters['id']),
         );
       case reports:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => ReportsPage(
             initialFilter: ReportStatusFilter.values.firstWhere(
               (filter) => filter.name == uri.queryParameters['status'],
@@ -234,32 +281,38 @@ class AppRoutes {
       case shopDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => ShopDetailsPage(shopId: uri.queryParameters['id']),
         );
       case shops:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) =>
               ShopsPage(initialQuery: uri.queryParameters['q'] ?? ''),
         );
       case ownerDetails:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => OwnerDetailsPage(ownerId: uri.queryParameters['id']),
         );
       case shopOwners:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const ShopOwnersPage(),
         );
       case dashboard:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           builder: (_) => const DashboardPage(),
         );
       case accountRecovery:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           fadesWholePage: true,
           builder: (_) => const AccountRecoveryPage(),
         );
@@ -267,6 +320,7 @@ class AppRoutes {
       default:
         return AppPageRoute<void>(
           settings: settings,
+          section: _sectionFor(uri.path),
           fadesWholePage: true,
           builder: (_) => const LoginPage(),
         );

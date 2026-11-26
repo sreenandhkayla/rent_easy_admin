@@ -24,10 +24,38 @@ class AppStrings {
   static const String showPassword = 'Show password';
   static const String hidePassword = 'Hide password';
   static const String continueLabel = 'Continue';
-  static const String loginPrototypeNote =
-      'Prototype: any valid-looking email and 6+ character password '
-      'continues to verification.';
   static const String invalidWorkEmail = 'Enter a valid work email.';
+  static const String enterPassword = 'Enter your password.';
+  static const String loginFailed =
+      'The email address or password you entered is incorrect. Please try '
+      'again.';
+  static const String loginNoAccess =
+      'This account has not been given access to the admin panel. Ask a '
+      'Super Admin to add you in Settings > Admin staff.';
+  static const String loginAccountDisabled =
+      'This account has been disabled. Contact your administrator.';
+  static const String loginTooManyAttempts =
+      'Too many attempts. Wait a few minutes and try again.';
+  static const String loginSecondFactorRequired =
+      'This account needs a second verification step that this sign-in page '
+      'does not support yet. Contact your administrator.';
+  static const String loginUnavailable =
+      'Sign-in is unavailable right now. Try again in a moment.';
+  static const String logoutFailed = 'Could not log out. Try again.';
+  static const String sessionCheckFailed = "Couldn't verify your session";
+  static const String noModuleAccessTitle = 'No access to this module';
+  static const String noModuleAccessMessage =
+      'Your account does not have permission to open this module. Ask a '
+      'Super Admin to update your role in Settings.';
+  static const String recordsLoadFailed =
+      'Could not load these records. Try again.';
+  static const String recordsAccessDenied =
+      'You do not have permission to view these records. Sign in again or '
+      'contact your administrator.';
+  static const String recordsSaveFailed = 'Could not save. Try again.';
+  static const String recordsWriteDenied =
+      'You do not have permission to make this change.';
+  static const String recordNotFound = 'This record no longer exists.';
   static const String accountRecovery = 'Account recovery';
   static const String accountRecoverySubtitle =
       "We'll send a reset link to your registered admin email.";

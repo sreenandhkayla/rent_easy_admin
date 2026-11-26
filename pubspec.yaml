@@ -39,7 +39,10 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   flutter_svg: ^2.5.0
-
+  firebase_auth: ^7.1.0
+  cloud_firestore: ^7.2.0
+  get_it: ^9.3.0
+  fpdart: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

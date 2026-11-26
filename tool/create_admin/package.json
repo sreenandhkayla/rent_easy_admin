@@ -1,0 +1,11 @@
+{
+  "name": "rent-easy-create-admin",
+  "private": true,
+  "description": "Creates or approves a RentEasy admin account with the Firebase Admin SDK.",
+  "scripts": {
+    "create-admin": "node create_admin.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}

@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../features/auth/presentation/widgets/admin_access_gate.dart';
 import '../theme/app_theme.dart';
+import '../widgets/admin_shell/admin_section.dart';
 
 class AppPageRoute<T> extends PageRouteBuilder<T> {
   AppPageRoute({
     required RouteSettings super.settings,
     required WidgetBuilder builder,
     this.fadesWholePage = false,
+    AdminSection? section,
   }) : super(
-         pageBuilder: (context, _, _) => builder(context),
+         pageBuilder: (context, _, _) => section == null
+             ? builder(context)
+             : AdminAccessGate(section: section, child: builder(context)),
          transitionDuration: fadesWholePage
              ? AppTheme.pageTransitionDuration
              : Duration.zero,
@@ -18,6 +23,14 @@ class AppPageRoute<T> extends PageRouteBuilder<T> {
        );
 
   final bool fadesWholePage;
+
+  @override
+  RoutePopDisposition get popDisposition {
+    final disposition = super.popDisposition;
+    return disposition == RoutePopDisposition.bubble
+        ? RoutePopDisposition.doNotPop
+        : disposition;
+  }
 
   @override
   Widget buildTransitions(

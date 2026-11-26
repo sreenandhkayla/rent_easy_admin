@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../features/auth/presentation/state/admin_session_cubit.dart';
+import '../../../features/auth/presentation/state/auth_cubit.dart';
+import '../../../features/auth/presentation/state/auth_state.dart';
 import '../../access/role_preview_cubit.dart';
+import '../../data/admin_record.dart';
+import '../../di/injection.dart';
+import '../../utils/app_messenger.dart';
 import '../../enums/admin_permission.dart';
 import '../../enums/admin_role.dart';
 
@@ -57,8 +63,8 @@ class _AdminShellState extends State<AdminShell> {
     openAdminSection(context, section, current: widget.section);
   }
 
-  Future<void> _confirmLogout() async {
-    final NavigatorState navigator = Navigator.of(context);
+  Future<void> _confirmLogout(BuildContext context) async {
+    final AuthCubit auth = context.read<AuthCubit>();
     final bool confirmed = await AppConfirmDialog.show(
       context,
       title: AppStrings.logOutTitle,
@@ -67,7 +73,17 @@ class _AdminShellState extends State<AdminShell> {
       cancelLabel: AppStrings.cancel,
     );
     if (!confirmed) return;
-    navigator.pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+    await auth.signOut();
+  }
+
+  void _onAuthChanged(BuildContext context, AuthState state) {
+    if (state.status == AuthStatus.signedOut) {
+      context.read<AdminSessionCubit>().signedOut();
+      return;
+    }
+    if (state.errorMessage case final message?) {
+      context.showAppMessage(message);
+    }
   }
 
   Widget _content(AdminRole? previewRole) {
@@ -91,6 +107,21 @@ class _AdminShellState extends State<AdminShell> {
   @override
   Widget build(BuildContext context) {
     final AdminRole? previewRole = context.watch<RolePreviewCubit>().state;
+    return BlocProvider<AuthCubit>(
+      create: (_) => getIt<AuthCubit>(),
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: _onAuthChanged,
+        child: _buildScaffold(previewRole),
+      ),
+    );
+  }
+
+  Widget _buildScaffold(AdminRole? previewRole) {
+    final AdminRecord? account = context
+        .select<AdminSessionCubit, AdminRecord?>(
+          (session) => session.state.account,
+        );
+    final String profileName = account?.name ?? AdminProfile.current.name;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -104,14 +135,19 @@ class _AdminShellState extends State<AdminShell> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AdminSidebar(
+                  sections: account?.accessibleSections ?? AdminSection.values,
                   selected: widget.section,
                   isCollapsed: isCollapsed,
                   badgeCounts: widget.badgeCounts,
                   onToggleCollapsed: () =>
                       setState(() => _isCollapsedByUser = !isCollapsed),
                   onSelect: _select,
-                  onLogout: _confirmLogout,
-                  profileRole: previewRole?.label ?? AdminProfile.current.role,
+                  onLogout: () => _confirmLogout(context),
+                  profileName: profileName,
+                  profileRole:
+                      previewRole?.label ??
+                      account?.role.label ??
+                      AdminProfile.current.role,
                 ),
                 Expanded(
                   child: SafeArea(
@@ -131,6 +167,7 @@ class _AdminShellState extends State<AdminShell> {
                           AdminTopBar(
                             title: widget.title,
                             subtitle: widget.subtitle,
+                            profileName: profileName,
                             breadcrumb: widget.breadcrumb,
                             actions: widget.headerActions,
                             hasUnreadNotifications: true,

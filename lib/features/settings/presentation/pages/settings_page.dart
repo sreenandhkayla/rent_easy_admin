@@ -11,6 +11,7 @@ import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
+import '../../../auth/presentation/state/auth_cubit.dart';
 import '../../data/models/admin_account.dart';
 import '../state/settings_cubit.dart';
 import '../state/settings_state.dart';
@@ -40,7 +41,7 @@ class SettingsPage extends StatelessWidget {
       context.showAppMessage(AppStrings.sectionNotBuilt(label));
 
   Future<void> _logout(BuildContext context) async {
-    final NavigatorState navigator = Navigator.of(context);
+    final AuthCubit auth = context.read<AuthCubit>();
     final bool confirmed = await AppConfirmDialog.show(
       context,
       title: AppStrings.logOutTitle,
@@ -49,7 +50,7 @@ class SettingsPage extends StatelessWidget {
       cancelLabel: AppStrings.cancel,
     );
     if (!confirmed) return;
-    navigator.pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
+    await auth.signOut();
   }
 
   void _updatePassword(
@@ -176,7 +177,7 @@ class SettingsPage extends StatelessWidget {
                                 newPassword,
                                 confirm,
                               ),
-                          onLogout: () => _logout(context),
+                          onLogout: _logout,
                         ),
                     ],
                   ),
@@ -205,7 +206,7 @@ class _ProfileTab extends StatelessWidget {
   final VoidCallback onFieldChanged;
   final void Function(String current, String newPassword, String confirm)
   onUpdatePassword;
-  final VoidCallback onLogout;
+  final ValueChanged<BuildContext> onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +220,7 @@ class _ProfileTab extends StatelessWidget {
       formVersion: state.passwordFormVersion,
       onFieldChanged: onFieldChanged,
       onUpdatePassword: onUpdatePassword,
-      onLogout: onLogout,
+      onLogout: () => onLogout(context),
     );
     return LayoutBuilder(
       builder: (context, constraints) {

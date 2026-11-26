@@ -5,8 +5,8 @@ import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
-import '../state/login_cubit.dart';
-import '../state/login_state.dart';
+import '../state/auth_cubit.dart';
+import '../state/auth_state.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key, required this.onForgotPassword});
@@ -29,7 +29,7 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submit() {
-    context.read<LoginCubit>().submit(
+    context.read<AuthCubit>().signIn(
       email: _emailController.text,
       password: _passwordController.text,
     );
@@ -37,8 +37,8 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final LoginCubit cubit = context.read<LoginCubit>();
-    return BlocBuilder<LoginCubit, LoginState>(
+    final AuthCubit cubit = context.read<AuthCubit>();
+    return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         return AutofillGroup(
           child: Column(
@@ -70,21 +70,20 @@ class _LoginFormState extends State<LoginForm> {
                 autofillHints: const [AutofillHints.password],
                 onChanged: (_) => cubit.passwordChanged(),
                 onSubmitted: (_) => _submit(),
-                trailingLabel: _ForgotPasswordLink(
-                  onTap: widget.onForgotPassword,
-                ),
+                // trailingLabel: _ForgotPasswordLink(
+                //   onTap: widget.onForgotPassword,
+                // ),
               ),
               const SizedBox(height: 24),
               AppPrimaryButton(
                 label: AppStrings.continueLabel,
-                isLoading: state.status == LoginStatus.submitting,
+                isLoading: state.isLoading,
                 onPressed: _submit,
               ),
-              const SizedBox(height: 20),
-              Text(
-                AppStrings.loginPrototypeNote,
-                style: AppTextStyles.bodySmall,
-              ),
+              if (state.errorMessage case final String message) ...[
+                const SizedBox(height: 20),
+                Text(message, style: AppTextStyles.fieldError),
+              ],
             ],
           ),
         );
@@ -93,19 +92,19 @@ class _LoginFormState extends State<LoginForm> {
   }
 }
 
-class _ForgotPasswordLink extends StatelessWidget {
-  const _ForgotPasswordLink({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Text(AppStrings.forgotPassword, style: AppTextStyles.link),
-      ),
-    );
-  }
-}
+// class _ForgotPasswordLink extends StatelessWidget {
+//   const _ForgotPasswordLink({required this.onTap});
+//
+//   final VoidCallback onTap;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return MouseRegion(
+//       cursor: SystemMouseCursors.click,
+//       child: GestureDetector(
+//         onTap: onTap,
+//         child: Text(AppStrings.forgotPassword, style: AppTextStyles.link),
+//       ),
+//     );
+//   }
+// }
