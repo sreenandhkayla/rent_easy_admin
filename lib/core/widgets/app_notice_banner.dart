@@ -12,14 +12,16 @@ class AppNoticeBanner extends StatelessWidget {
     super.key,
     required this.tone,
     this.title,
-    required this.message,
+    this.message,
+    this.spans,
     this.icon,
     this.svgIcon,
   });
 
   final AppNoticeTone tone;
   final String? title;
-  final String message;
+  final String? message;
+  final List<InlineSpan>? spans;
   final IconData? icon;
   final String? svgIcon;
 
@@ -75,7 +77,8 @@ class AppNoticeBanner extends StatelessWidget {
                     ),
                     const TextSpan(text: ' '),
                   ],
-                  TextSpan(text: message),
+                  if (message case final String text) TextSpan(text: text),
+                  ...?spans,
                 ],
               ),
               style: AppTextStyles.banner.copyWith(color: foreground),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/resources/strings/subscriptions_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
 import '../state/subscriptions_state.dart';
@@ -24,8 +25,6 @@ class SubscriptionPaymentsToolbar extends StatefulWidget {
 
 class _SubscriptionPaymentsToolbarState
     extends State<SubscriptionPaymentsToolbar> {
-  static const double _searchWidth = 332;
-
   late final TextEditingController _searchController = TextEditingController(
     text: widget.state.paymentQuery,
   );
@@ -62,9 +61,9 @@ class _SubscriptionPaymentsToolbarState
                 widget.onFilterChanged(PaymentFilter.values[index]),
           ),
           SizedBox(
-            width: constraints.maxWidth < _searchWidth
+            width: constraints.maxWidth < AppTheme.searchFieldMaxWidth
                 ? constraints.maxWidth
-                : _searchWidth,
+                : AppTheme.searchFieldMaxWidth,
             child: AppSearchField(
               controller: _searchController,
               hintText: SubscriptionsStrings.paymentSearchHint,

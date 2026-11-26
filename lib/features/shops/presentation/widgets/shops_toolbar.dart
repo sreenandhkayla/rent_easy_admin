@@ -5,6 +5,7 @@ import '../../../../core/enums/subscription_plan.dart';
 import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../state/shops_state.dart';
@@ -32,8 +33,6 @@ class ShopsToolbar extends StatefulWidget {
 }
 
 class _ShopsToolbarState extends State<ShopsToolbar> {
-  static const double _searchWidth = 360;
-
   late final TextEditingController _searchController = TextEditingController(
     text: widget.state.query,
   );
@@ -58,9 +57,9 @@ class _ShopsToolbarState extends State<ShopsToolbar> {
         runSpacing: 10,
         children: [
           SizedBox(
-            width: constraints.maxWidth < _searchWidth
+            width: constraints.maxWidth < AppTheme.searchFieldMaxWidth
                 ? constraints.maxWidth
-                : _searchWidth,
+                : AppTheme.searchFieldMaxWidth,
             child: AppSearchField(
               controller: _searchController,
               hintText: ShopsStrings.searchHint,

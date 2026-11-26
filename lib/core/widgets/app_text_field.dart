@@ -14,6 +14,7 @@ class AppTextField extends StatefulWidget {
     this.errorText,
     this.helperText,
     this.inputFormatters,
+    this.maxLength,
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
@@ -31,6 +32,7 @@ class AppTextField extends StatefulWidget {
   final String? errorText;
   final String? helperText;
   final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -72,6 +74,7 @@ class _AppTextFieldState extends State<AppTextField> {
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
           inputFormatters: widget.inputFormatters,
+          maxLength: widget.maxLength,
           minLines: widget.minLines,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           style: AppTextStyles.input,
@@ -81,6 +84,7 @@ class _AppTextFieldState extends State<AppTextField> {
             helperText: widget.helperText,
             helperStyle: AppTextStyles.bodyCaption,
             helperMaxLines: 3,
+            counterStyle: AppTextStyles.meta,
             suffixIcon: widget.obscureText
                 ? IconButton(
                     onPressed: _toggleObscured,

@@ -9,11 +9,13 @@ class AppInitialsAvatar extends StatelessWidget {
     required this.name,
     this.size = 36,
     this.isMuted = false,
+    this.initialsStyle,
   });
 
   final String name;
   final double size;
   final bool isMuted;
+  final TextStyle? initialsStyle;
 
   String get _initials {
     final List<String> parts = name
@@ -38,9 +40,11 @@ class AppInitialsAvatar extends StatelessWidget {
       ),
       child: Text(
         _initials,
-        style: isMuted
-            ? AppTextStyles.avatarInitialsMuted
-            : AppTextStyles.avatarInitials,
+        style:
+            initialsStyle ??
+            (isMuted
+                ? AppTextStyles.avatarInitialsMuted
+                : AppTextStyles.avatarInitials),
       ),
     );
   }

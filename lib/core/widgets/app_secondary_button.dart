@@ -15,6 +15,7 @@ class AppSecondaryButton extends StatelessWidget {
     this.isDestructive = false,
     this.isExpanded = false,
     this.labelStyle,
+    this.iconColor,
   });
 
   final String label;
@@ -24,6 +25,7 @@ class AppSecondaryButton extends StatelessWidget {
   final bool isDestructive;
   final bool isExpanded;
   final TextStyle? labelStyle;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class AppSecondaryButton extends StatelessWidget {
         : AppColors.textPrimary;
     final Color iconColor = isDestructive
         ? AppColors.danger
-        : AppColors.textSecondary;
+        : this.iconColor ?? AppColors.textSecondary;
     final Widget? leading = svgIcon != null
         ? SvgPicture.asset(
             svgIcon!,

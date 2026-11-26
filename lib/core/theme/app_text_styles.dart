@@ -243,6 +243,13 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
+  static const TextStyle avatarInitialsLarge = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onInk,
+  );
+
   static const TextStyle avatarInitialsMuted = TextStyle(
     fontFamily: fontFamily,
     fontSize: 11,
@@ -311,6 +318,22 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     height: 1.45,
     color: AppColors.statusGreen,
+  );
+
+  static const TextStyle fieldError = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+    color: AppColors.error,
+  );
+
+  static const TextStyle metaNegative = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    height: 1.45,
+    color: AppColors.pillRedText,
   );
 
   static const TextStyle labelMuted = TextStyle(

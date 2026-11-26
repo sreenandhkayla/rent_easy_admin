@@ -20,6 +20,7 @@ class AdminSidebar extends StatelessWidget {
     required this.onToggleCollapsed,
     required this.onSelect,
     required this.onLogout,
+    required this.profileRole,
   });
 
   final AdminSection selected;
@@ -28,6 +29,7 @@ class AdminSidebar extends StatelessWidget {
   final VoidCallback onToggleCollapsed;
   final ValueChanged<AdminSection> onSelect;
   final VoidCallback onLogout;
+  final String profileRole;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,6 @@ class AdminSidebar extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: AppSidebarItem(
-                                icon: section.icon,
                                 svgIcon: section.svgIcon,
                                 label: section.label,
                                 isSelected: section == selected,
@@ -88,7 +89,7 @@ class AdminSidebar extends StatelessWidget {
                     ),
                   ),
                   const Divider(height: 32, color: AppColors.divider),
-                  _ProfileTile(compact: compact),
+                  _ProfileTile(compact: compact, role: profileRole),
                   const SizedBox(height: 8),
                   AppSidebarItem(
                     icon: Icons.logout,
@@ -155,9 +156,10 @@ class _SidebarHeader extends StatelessWidget {
 }
 
 class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({required this.compact});
+  const _ProfileTile({required this.compact, required this.role});
 
   final bool compact;
+  final String role;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +179,7 @@ class _ProfileTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(profile.name, style: AppTextStyles.titleSmall),
-                Text(profile.role, style: AppTextStyles.meta),
+                Text(role, style: AppTextStyles.meta),
               ],
             ),
           ),

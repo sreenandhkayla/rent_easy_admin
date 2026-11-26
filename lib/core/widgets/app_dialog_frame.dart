@@ -58,6 +58,7 @@ class AppDialogFrame extends StatelessWidget {
                           tooltip: MaterialLocalizations.of(context)
                               .closeButtonTooltip,
                           onPressed: onClose,
+                          borderRadius: AppTheme.radiusSmall,
                         ),
                       ],
                     ),

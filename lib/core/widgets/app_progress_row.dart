@@ -9,11 +9,17 @@ class AppProgressRow extends StatelessWidget {
     required this.label,
     required this.trailing,
     required this.fraction,
+    this.labelStyle = AppTextStyles.labelRegular,
+    this.trailingStyle = AppTextStyles.meta,
+    this.barHeight = 6,
   });
 
   final String label;
   final String trailing;
   final double fraction;
+  final TextStyle labelStyle;
+  final TextStyle trailingStyle;
+  final double barHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +30,17 @@ class AppProgressRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(label, style: AppTextStyles.labelRegular)),
+              Expanded(child: Text(label, style: labelStyle)),
               const SizedBox(width: 12),
-              Text(trailing, style: AppTextStyles.meta),
+              Text(trailing, style: trailingStyle),
             ],
           ),
           const SizedBox(height: 6),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(barHeight),
             child: LinearProgressIndicator(
               value: fraction.clamp(0, 1).toDouble(),
-              minHeight: 6,
+              minHeight: barHeight,
               color: AppColors.ink,
               backgroundColor: AppColors.iconCircle,
             ),

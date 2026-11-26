@@ -22,4 +22,8 @@ class AppImages {
   static const String viewOwnerIcon = '$_icons/view-owner-icon.svg';
   static const String shieldIcon = '$_icons/shield-icon.svg';
   static const String rightMarkIcon = '$_icons/right-mark-icon.svg';
+  static const String mailIcon = '$_icons/mail-icon.svg';
+  static const String sendIcon = '$_icons/send-icon.svg';
+  static const String editProfileIcon = '$_icons/edit-profile-icon.svg';
+  static const String dashboardIcon = '$_icons/dashboard-icon.svg';
 }

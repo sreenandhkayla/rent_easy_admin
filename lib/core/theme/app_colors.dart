@@ -7,6 +7,7 @@ class AppColors {
   static const Color background = Color(0xFFEFEEEA);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color border = Color(0xFFE3E2DE);
+  static const Color checkboxBorder = Color(0xFF767676);
   static const Color buttonBorder = Color(0xFF000000);
   static const Color textPrimary = Color(0xFF171717);
   static const Color textSecondary = Color(0xFF666666);
@@ -30,6 +31,8 @@ class AppColors {
   static const Color pillGreenBackground = Color(0xFFE6F2EB);
   static const Color pillRedBackground = Color(0xFFFBE8E8);
   static const Color pillRedText = Color(0xFFC0392B);
+  static const Color pillSlateBackground = Color(0xFFECF0F5);
+  static const Color pillSlateText = Color(0xFF3F4B5E);
   static const Color tableHeaderBackground = Color(0xFFFBFAF8);
   static const Color tableHeaderBorder = Color(0xFFEBEAE6);
   static const Color danger = Color(0xFFC2453F);

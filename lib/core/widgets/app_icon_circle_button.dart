@@ -11,6 +11,7 @@ class AppIconCircleButton extends StatelessWidget {
     required this.onPressed,
     this.size = AppTheme.iconButtonSize,
     this.showDot = false,
+    this.borderRadius,
   });
 
   final IconData icon;
@@ -18,17 +19,22 @@ class AppIconCircleButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final double size;
   final bool showDot;
+  final double? borderRadius;
 
   @override
   Widget build(BuildContext context) {
+    final double? radius = borderRadius;
+    final ShapeBorder shape = radius == null
+        ? const CircleBorder()
+        : RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
     return Tooltip(
       message: tooltip,
       child: Material(
         color: AppColors.iconCircle,
-        shape: const CircleBorder(),
+        shape: shape,
         child: InkWell(
           onTap: onPressed,
-          customBorder: const CircleBorder(),
+          customBorder: shape,
           child: SizedBox.square(
             dimension: size,
             child: Stack(

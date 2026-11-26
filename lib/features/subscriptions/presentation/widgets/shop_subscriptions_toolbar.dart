@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/enums/subscription_plan.dart';
 import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
@@ -31,7 +32,6 @@ class ShopSubscriptionsToolbar extends StatefulWidget {
 
 class _ShopSubscriptionsToolbarState extends State<ShopSubscriptionsToolbar> {
   static const double _singleRowBreakpoint = 1100;
-  static const double _searchMinWidth = 280;
 
   late final TextEditingController _searchController = TextEditingController(
     text: widget.state.query,
@@ -87,7 +87,7 @@ class _ShopSubscriptionsToolbarState extends State<ShopSubscriptionsToolbar> {
             children: [
               statusTabs,
               const SizedBox(width: 10),
-              Expanded(child: search),
+              Flexible(child: search),
               const SizedBox(width: 10),
               plan,
               const SizedBox(width: 10),
@@ -101,9 +101,9 @@ class _ShopSubscriptionsToolbarState extends State<ShopSubscriptionsToolbar> {
           children: [
             statusTabs,
             SizedBox(
-              width: constraints.maxWidth < _searchMinWidth
+              width: constraints.maxWidth < AppTheme.searchFieldMaxWidth
                   ? constraints.maxWidth
-                  : _searchMinWidth,
+                  : AppTheme.searchFieldMaxWidth,
               child: search,
             ),
             plan,

@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../access/role_preview_cubit.dart';
+import '../../enums/admin_permission.dart';
+import '../../enums/admin_role.dart';
 
 import '../../navigation/app_routes.dart';
 import '../../resources/strings/app_strings.dart';
 import '../../theme/app_colors.dart';
 import '../app_confirm_dialog.dart';
+import '../app_permission_denied.dart';
 import 'admin_content_transition.dart';
 import 'admin_navigation.dart';
+import 'admin_preview_banner.dart';
 import 'admin_section.dart';
 import 'admin_sidebar.dart';
 import 'admin_top_bar.dart';
@@ -63,8 +70,27 @@ class _AdminShellState extends State<AdminShell> {
     navigator.pushNamedAndRemoveUntil(AppRoutes.login, (_) => false);
   }
 
+  Widget _content(AdminRole? previewRole) {
+    final AdminPermission? permission = widget.section.permission;
+    if (previewRole == null ||
+        permission == null ||
+        permission.isGranted(previewRole)) {
+      return widget.child;
+    }
+    final RolePreviewCubit preview = context.read<RolePreviewCubit>();
+    return AppPermissionDenied(
+      roleLabel: previewRole.label,
+      accessSummary: widget.section.accessSummary,
+      onBackToDashboard: () =>
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(AppRoutes.dashboard, (_) => false),
+      onExitPreview: preview.exit,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final AdminRole? previewRole = context.watch<RolePreviewCubit>().state;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -85,6 +111,7 @@ class _AdminShellState extends State<AdminShell> {
                       setState(() => _isCollapsedByUser = !isCollapsed),
                   onSelect: _select,
                   onLogout: _confirmLogout,
+                  profileRole: previewRole?.label ?? AdminProfile.current.role,
                 ),
                 Expanded(
                   child: SafeArea(
@@ -94,6 +121,13 @@ class _AdminShellState extends State<AdminShell> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (previewRole != null) ...[
+                            AdminPreviewBanner(
+                              roleLabel: previewRole.label,
+                              onExit: context.read<RolePreviewCubit>().exit,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                           AdminTopBar(
                             title: widget.title,
                             subtitle: widget.subtitle,
@@ -104,7 +138,7 @@ class _AdminShellState extends State<AdminShell> {
                                 _select(AdminSection.notifications),
                           ),
                           const SizedBox(height: 24),
-                          AdminContentTransition(child: widget.child),
+                          AdminContentTransition(child: _content(previewRole)),
                         ],
                       ),
                     ),

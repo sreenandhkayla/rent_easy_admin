@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/enums/registration_date_filter.dart';
 import '../../../../core/resources/strings/shop_owners_strings.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../state/shop_owners_state.dart';
@@ -43,9 +44,9 @@ class ShopOwnersToolbar extends StatelessWidget {
               runSpacing: 10,
               children: [
                 SizedBox(
-                  width: constraints.maxWidth < 320
+                  width: constraints.maxWidth < AppTheme.searchFieldMaxWidth
                       ? constraints.maxWidth
-                      : 320,
+                      : AppTheme.searchFieldMaxWidth,
                   child: AppSearchField(
                     hintText: ShopOwnersStrings.searchHint,
                     onChanged: onSearch,

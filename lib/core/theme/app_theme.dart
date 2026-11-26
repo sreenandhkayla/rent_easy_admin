@@ -36,11 +36,11 @@ class AppTheme {
   static const double dialogWideMaxWidth = 500;
   static const double radiusDialog = 20;
   static const double iconButtonSize = 36;
-  static const double toolbarControlHeight = 46;
+  static const double toolbarControlHeight = 44;
   static const EdgeInsets toolbarFieldPadding = EdgeInsets.symmetric(
-    horizontal: 12,
-    vertical: 11.5,
+    horizontal: 14,
   );
+  static const double searchFieldMaxWidth = 420;
   static const Duration pageTransitionDuration = Duration(milliseconds: 220);
   static const Curve pageTransitionCurve = Curves.easeOutCubic;
   static const Offset pageTransitionOffset = Offset(0, 0.015);

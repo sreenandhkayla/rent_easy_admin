@@ -82,5 +82,26 @@ class AppStrings {
   static String updatedAt(DateTime date) =>
       'Updated ${AppFormatters.dateTime(date)}';
 
+  static const String previewLead = 'Previewing the console as ';
+  static const String previewTail =
+      '. Restricted pages show the permission-denied state.';
+  static const String exitPreview = 'Exit preview';
+  static const String noAccessTitle = "You don't have access to this page";
+  static const String backToDashboard = 'Back to dashboard';
+  static const String exitRolePreview = 'Exit role preview';
+  static const String accessDashboard = 'the dashboard';
+  static const String accessOwnersAndShops = 'shop owners and shops';
+  static const String accessSubscriptions = 'subscriptions and payments';
+  static const String accessReports = 'reports and complaints';
+  static const String accessAnalytics = 'analytics and aggregate export';
+  static const String accessNotifications =
+      'creating and sending notifications';
+  static const String accessSettings =
+      'admin staff, roles, platform settings and activity logs';
+
+  static String noAccessMessage(String role, String summary) =>
+      "Your role ($role) doesn't include $summary. Ask a Super Admin to "
+      'update your permissions.';
+
   static String sectionNotBuilt(String label) => '$label is not built yet.';
 }

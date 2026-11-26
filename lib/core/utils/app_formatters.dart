@@ -39,8 +39,8 @@ class AppFormatters {
     return '₹${value < 0 ? '-' : ''}$buffer,$lastThree';
   }
 
-  static String rupeesLakh(int value) =>
-      '₹${(value / 100000).toStringAsFixed(1)}L';
+  static String rupeesLakh(int value, {int decimals = 1}) =>
+      '₹${(value / 100000).toStringAsFixed(decimals)}L';
 
   static String percent(double fraction) =>
       '${(fraction * 100).toStringAsFixed(1)}%';

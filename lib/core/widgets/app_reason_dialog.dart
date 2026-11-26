@@ -4,6 +4,7 @@ import '../resources/strings/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'app_dialog_frame.dart';
+import 'app_notice_banner.dart';
 import 'app_primary_button.dart';
 import 'app_secondary_button.dart';
 import 'app_text_field.dart';
@@ -17,6 +18,8 @@ class AppReasonDialog extends StatefulWidget {
     required this.reasonHint,
     required this.reasonRequiredError,
     required this.confirmLabel,
+    this.notice,
+    this.isDestructive = true,
   });
 
   final String title;
@@ -25,6 +28,8 @@ class AppReasonDialog extends StatefulWidget {
   final String reasonHint;
   final String reasonRequiredError;
   final String confirmLabel;
+  final String? notice;
+  final bool isDestructive;
 
   static Future<String?> show(
     BuildContext context, {
@@ -34,6 +39,8 @@ class AppReasonDialog extends StatefulWidget {
     required String reasonHint,
     required String reasonRequiredError,
     required String confirmLabel,
+    String? notice,
+    bool isDestructive = true,
   }) {
     return showDialog<String>(
       context: context,
@@ -45,6 +52,8 @@ class AppReasonDialog extends StatefulWidget {
         reasonHint: reasonHint,
         reasonRequiredError: reasonRequiredError,
         confirmLabel: confirmLabel,
+        notice: notice,
+        isDestructive: isDestructive,
       ),
     );
   }
@@ -82,6 +91,14 @@ class _AppReasonDialogState extends State<AppReasonDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(widget.message, style: AppTextStyles.bodySmall),
+          if (widget.notice case final String notice) ...[
+            const SizedBox(height: 16),
+            AppNoticeBanner(
+              tone: AppNoticeTone.info,
+              icon: Icons.warning_amber_rounded,
+              message: notice,
+            ),
+          ],
           const SizedBox(height: 16),
           AppTextField(
             label: widget.reasonLabel,
@@ -102,7 +119,7 @@ class _AppReasonDialogState extends State<AppReasonDialog> {
         AppPrimaryButton(
           label: widget.confirmLabel,
           isCompact: true,
-          isDestructive: true,
+          isDestructive: widget.isDestructive,
           onPressed: _confirm,
         ),
       ],
