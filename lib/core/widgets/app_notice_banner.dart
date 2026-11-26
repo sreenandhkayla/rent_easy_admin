@@ -5,20 +5,20 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
-enum AppNoticeTone { danger, warning, info }
+enum AppNoticeTone { danger, warning, info, success }
 
 class AppNoticeBanner extends StatelessWidget {
   const AppNoticeBanner({
     super.key,
     required this.tone,
-    required this.title,
+    this.title,
     required this.message,
     this.icon,
     this.svgIcon,
   });
 
   final AppNoticeTone tone;
-  final String title;
+  final String? title;
   final String message;
   final IconData? icon;
   final String? svgIcon;
@@ -37,6 +37,10 @@ class AppNoticeBanner extends StatelessWidget {
       AppNoticeTone.info => (
         AppColors.bannerInfoBackground,
         AppColors.textPrimary,
+      ),
+      AppNoticeTone.success => (
+        AppColors.bannerSuccessBackground,
+        AppColors.bannerSuccessText,
       ),
     };
     return Container(
@@ -64,11 +68,14 @@ class AppNoticeBanner extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 children: [
-                  TextSpan(
-                    text: title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  TextSpan(text: ' $message'),
+                  if (title != null) ...[
+                    TextSpan(
+                      text: title,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const TextSpan(text: ' '),
+                  ],
+                  TextSpan(text: message),
                 ],
               ),
               style: AppTextStyles.banner.copyWith(color: foreground),

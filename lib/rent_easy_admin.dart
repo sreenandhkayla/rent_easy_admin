@@ -15,6 +15,7 @@ class RentEasyAdmin extends StatelessWidget {
       themeMode: ThemeMode.light,
       initialRoute: AppRoutes.login,
       onGenerateRoute: AppRoutes.onGenerateRoute,
+      navigatorObservers: [AppRoutes.observer],
     );
   }
 }

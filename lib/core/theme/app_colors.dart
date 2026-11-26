@@ -38,6 +38,8 @@ class AppColors {
   static const Color bannerDangerBackground = Color(0xFFFBE9E8);
   static const Color bannerDangerText = Color(0xFF9B2C2C);
   static const Color bannerInfoBackground = Color(0xFFECF0F5);
+  static const Color bannerSuccessBackground = Color(0xFFE4F0E9);
+  static const Color bannerSuccessText = Color(0xFF1F5A41);
   static const Color bannerWarningBackground = Color(0xFFFCF1DE);
   static const Color skeletonHighlight = Color(0xFFF6F5F1);
 }

@@ -12,12 +12,16 @@ class AppDialogFrame extends StatelessWidget {
     required this.body,
     required this.actions,
     required this.onClose,
+    this.maxWidth = AppTheme.dialogMaxWidth,
+    this.borderRadius = AppTheme.radiusCard,
   });
 
   final String title;
   final Widget body;
   final List<Widget> actions;
   final VoidCallback onClose;
+  final double maxWidth;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +30,10 @@ class AppDialogFrame extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppTheme.dialogMaxWidth),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

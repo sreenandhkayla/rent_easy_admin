@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
 import '../../../../core/utils/app_messenger.dart';
@@ -11,17 +12,26 @@ import '../../../../core/widgets/app_segmented_tabs.dart';
 import '../../data/models/subscription_overview.dart';
 import '../state/subscriptions_cubit.dart';
 import '../state/subscriptions_state.dart';
+import '../widgets/plans_tab.dart';
+import '../widgets/reconciliation_tab.dart';
 import '../widgets/shop_subscriptions_tab.dart';
+import '../widgets/subscription_payments_tab.dart';
 import '../widgets/subscriptions_overview_tab.dart';
 
 class SubscriptionsPage extends StatelessWidget {
-  const SubscriptionsPage({super.key, this.showShopSubscriptions = false});
+  const SubscriptionsPage({
+    super.key,
+    this.initialTab = SubscriptionsTab.overview,
+  });
 
-  final bool showShopSubscriptions;
+  final SubscriptionsTab initialTab;
 
   static const Set<SubscriptionsTab> _builtTabs = {
     SubscriptionsTab.overview,
     SubscriptionsTab.shopSubscriptions,
+    SubscriptionsTab.plans,
+    SubscriptionsTab.payments,
+    SubscriptionsTab.reconciliation,
   };
 
   void _notBuilt(BuildContext context, String label) =>
@@ -31,8 +41,8 @@ class SubscriptionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SubscriptionsCubit(
-        initialTab: showShopSubscriptions
-            ? SubscriptionsTab.shopSubscriptions
+        initialTab: _builtTabs.contains(initialTab)
+            ? initialTab
             : SubscriptionsTab.overview,
       )..load(),
       child: BlocBuilder<SubscriptionsCubit, SubscriptionsState>(
@@ -80,15 +90,47 @@ class SubscriptionsPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       if (state.tab == SubscriptionsTab.shopSubscriptions)
                         ShopSubscriptionsTab(state: state)
+                      else if (state.tab == SubscriptionsTab.plans)
+                        PlansTab(
+                          plans: state.plans,
+                          onCreatePlan: () async {
+                            await Navigator.of(context)
+                                .pushNamed(AppRoutes.createPlan);
+                            cubit.syncPlans();
+                          },
+                          onViewDetails: (plan) async {
+                            await Navigator.of(context)
+                                .pushNamed(AppRoutes.planDetailsFor(plan.id));
+                            cubit.syncPlans();
+                          },
+                          onEdit: (_) =>
+                              _notBuilt(context, SubscriptionsStrings.editPlan),
+                        )
+                      else if (state.tab == SubscriptionsTab.payments)
+                        SubscriptionPaymentsTab(
+                          state: state,
+                          onFilterChanged: cubit.filterPayments,
+                          onSearch: cubit.searchPayments,
+                          onView: (payment) => Navigator.of(context).pushNamed(
+                            AppRoutes.paymentDetailsFor(payment.transactionId),
+                          ),
+                        )
+                      else if (state.tab == SubscriptionsTab.reconciliation &&
+                          state.reconciliationSummary != null)
+                        ReconciliationTab(
+                          summary: state.reconciliationSummary!,
+                          rows: state.reconciliationPayments,
+                          onOpen: (payment) => Navigator.of(context).pushNamed(
+                            AppRoutes.paymentDetailsFor(payment.transactionId),
+                          ),
+                        )
                       else
                         SubscriptionsOverviewTab(
                           overview: overview,
-                          onViewPayments: () => _notBuilt(
-                            context,
-                            SubscriptionsStrings.tabPayments,
-                          ),
+                          onViewPayments: () =>
+                              cubit.selectTab(SubscriptionsTab.payments),
                           onManagePlans: () =>
-                              _notBuilt(context, SubscriptionsStrings.tabPlans),
+                              cubit.selectTab(SubscriptionsTab.plans),
                         ),
                     ],
                   ),

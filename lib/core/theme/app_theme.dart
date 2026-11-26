@@ -33,12 +33,17 @@ class AppTheme {
   static const double sidebarCollapsedWidth = 76;
   static const double compactButtonHeight = 40;
   static const double dialogMaxWidth = 420;
+  static const double dialogWideMaxWidth = 500;
+  static const double radiusDialog = 20;
   static const double iconButtonSize = 36;
   static const double toolbarControlHeight = 46;
   static const EdgeInsets toolbarFieldPadding = EdgeInsets.symmetric(
     horizontal: 12,
     vertical: 11.5,
   );
+  static const Duration pageTransitionDuration = Duration(milliseconds: 220);
+  static const Curve pageTransitionCurve = Curves.easeOutCubic;
+  static const Offset pageTransitionOffset = Offset(0, 0.015);
 
   static ThemeData get light {
     final OutlineInputBorder border = OutlineInputBorder(

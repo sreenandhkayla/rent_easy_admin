@@ -3,6 +3,9 @@ import '../../../core/enums/subscription_plan.dart';
 import '../../shops/data/models/shop.dart';
 import '../../shops/data/shops_mock_data.dart';
 import 'models/payment_attempt.dart';
+import 'models/plan_definition.dart';
+import 'models/reconciliation_summary.dart';
+import 'models/subscription_payment.dart';
 import 'models/shop_subscription.dart';
 import 'models/subscription_overview.dart';
 
@@ -40,6 +43,266 @@ class SubscriptionsMockData {
       ],
       updatedAt: updatedAt,
     );
+  }
+
+  static List<PlanDefinition> plans() => List.of(_plans);
+
+  static void addPlan(PlanDefinition plan) => _plans.add(plan);
+
+  static PlanDefinition? plan(String id) {
+    for (final PlanDefinition item in _plans) {
+      if (item.id == id) return item;
+    }
+    return null;
+  }
+
+  static void archivePlan(String id, DateTime now) {
+    final int index = _plans.indexWhere((item) => item.id == id);
+    if (index < 0) return;
+    _plans[index] = _plans[index].copyWith(
+      status: PlanStatus.archived,
+      updatedAt: now,
+    );
+  }
+
+  static final List<PlanDefinition> _plans = [
+    PlanDefinition(
+      id: 'basic',
+      name: 'Basic',
+      price: 499,
+      billingPeriod: PlanBillingPeriod.month,
+      description:
+          'For single-location shops getting started with digital rental '
+          'records.',
+      features: [
+        'Item, customer and rental records',
+        'Up to 2 staff accounts',
+        'Return reminders',
+      ],
+      subscribedShops: 412,
+      limit: 'Up to 2 staff accounts',
+      updatedAt: DateTime(2026, 10, 2),
+      status: PlanStatus.active,
+    ),
+    PlanDefinition(
+      id: 'professional',
+      name: 'Professional',
+      price: 999,
+      billingPeriod: PlanBillingPeriod.month,
+      description:
+          'For busy shops that need maintenance tracking and payment reports.',
+      features: [
+        'Everything in Basic',
+        'Up to 6 staff accounts',
+        'Maintenance tracking',
+        'Payment reports',
+      ],
+      subscribedShops: 389,
+      limit: 'Up to 6 staff accounts',
+      updatedAt: DateTime(2026, 11, 14),
+      status: PlanStatus.active,
+    ),
+    PlanDefinition(
+      id: 'premium',
+      name: 'Premium',
+      price: 9999,
+      billingPeriod: PlanBillingPeriod.year,
+      description: 'Yearly plan for established shops with larger teams.',
+      features: [
+        'Everything in Professional',
+        'Unlimited staff accounts',
+        'Priority support',
+      ],
+      subscribedShops: 186,
+      limit: 'Unlimited staff accounts',
+      updatedAt: DateTime(2026, 9, 21),
+      status: PlanStatus.active,
+    ),
+    PlanDefinition(
+      id: 'starter',
+      name: 'Starter (legacy)',
+      price: 299,
+      billingPeriod: PlanBillingPeriod.month,
+      description: 'Retired introductory plan. Kept for history.',
+      features: ['Item and rental records', '1 staff account'],
+      subscribedShops: 0,
+      limit: '1 staff account',
+      updatedAt: DateTime(2025, 3, 31),
+      status: PlanStatus.archived,
+    ),
+  ];
+
+  static List<SubscriptionPayment> payments() => [
+    SubscriptionPayment(
+      transactionId: 'TXN-88410219',
+      shopId: 'SHP-2012',
+      shopName: 'Thomas Event Equipment',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 11, 24, 9, 12),
+      status: AttemptStatus.pending,
+      verification: VerificationStatus.awaiting,
+      providerReference: 'pay_Pq9Hd3Vx22',
+      reconciliation: ReconciliationStatus.pending,
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410231',
+      shopId: 'SHP-2001',
+      shopName: 'Kumar Construction Rentals',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 11, 22, 10, 42),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq8lLm2Xa9',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04812',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410227',
+      shopId: 'SHP-2013',
+      shopName: 'Muhammed Machinery',
+      plan: SubscriptionPlan.premium,
+      amount: 9999,
+      paidAt: DateTime(2026, 11, 22, 9, 18),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq80Kc7Wd1',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04811',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410198',
+      shopId: 'SHP-2016',
+      shopName: 'Chandran Auto Rentals',
+      plan: SubscriptionPlan.basic,
+      amount: 499,
+      paidAt: DateTime(2026, 11, 20, 18, 5),
+      status: AttemptStatus.failed,
+      verification: VerificationStatus.notVerified,
+      providerReference: 'pay_Pq7ZkT0bR4',
+      reconciliation: ReconciliationStatus.notApplicable,
+      failureReason: 'Bank declined the transaction',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410166',
+      shopId: 'SHP-2008',
+      shopName: 'Menon Car Rentals',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 11, 15, 11, 37),
+      status: AttemptStatus.failed,
+      verification: VerificationStatus.notVerified,
+      providerReference: 'pay_Pq6Ty4Fn31',
+      reconciliation: ReconciliationStatus.notApplicable,
+      failureReason: 'Payment cancelled by the owner',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410141',
+      shopId: 'SHP-2007',
+      shopName: 'Nair Sound & Lights – Guruvayur',
+      plan: SubscriptionPlan.basic,
+      amount: 499,
+      paidAt: DateTime(2026, 11, 9, 16, 20),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq5Rb2Ms66',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04698',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410119',
+      shopId: 'SHP-2002',
+      shopName: 'Kumar Construction – Aluva',
+      plan: SubscriptionPlan.basic,
+      amount: 499,
+      paidAt: DateTime(2026, 11, 2, 8, 55),
+      status: AttemptStatus.failed,
+      verification: VerificationStatus.notVerified,
+      providerReference: 'pay_Pq5Lh9Bv08',
+      reconciliation: ReconciliationStatus.notApplicable,
+      failureReason: 'Card authentication failed',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410102',
+      shopId: 'SHP-2011',
+      shopName: 'Pillai Tools Hub',
+      plan: SubscriptionPlan.basic,
+      amount: 499,
+      paidAt: DateTime(2026, 11, 1, 12, 3),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq4Aa0Jh57',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04652',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410087',
+      shopId: 'SHP-2005',
+      shopName: 'Mathew Machinery Hire',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 10, 29, 19, 46),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq3Wn8Gt90',
+      reconciliation: ReconciliationStatus.unmatched,
+      invoiceNumber: 'INV-26-04610',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410052',
+      shopId: 'SHP-2012',
+      shopName: 'Thomas Event Equipment',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 10, 24, 10, 10),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq2Vc5Ek14',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04577',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410018',
+      shopId: 'SHP-2016',
+      shopName: 'Chandran Auto Rentals',
+      plan: SubscriptionPlan.basic,
+      amount: 499,
+      paidAt: DateTime(2026, 10, 20, 17, 48),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq1Mx6Cy05',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04548',
+    ),
+    SubscriptionPayment(
+      transactionId: 'TXN-88410031',
+      shopId: 'SHP-2008',
+      shopName: 'Menon Car Rentals',
+      plan: SubscriptionPlan.professional,
+      amount: 999,
+      paidAt: DateTime(2026, 10, 15, 11, 2),
+      status: AttemptStatus.successful,
+      verification: VerificationStatus.verified,
+      providerReference: 'pay_Pq1Zr3Dq72',
+      reconciliation: ReconciliationStatus.matched,
+      invoiceNumber: 'INV-26-04529',
+    ),
+  ];
+
+  static ReconciliationSummary reconciliationSummary() =>
+      const ReconciliationSummary(
+        matched: 1189,
+        unmatched: 1,
+        pending: 1,
+        refunds: 0,
+      );
+
+  static SubscriptionPayment? payment(String transactionId) {
+    for (final SubscriptionPayment item in payments()) {
+      if (item.transactionId == transactionId) return item;
+    }
+    return null;
   }
 
   static const Map<SubscriptionPlan, int> planPrices = {

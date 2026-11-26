@@ -5,6 +5,7 @@ import '../../navigation/app_routes.dart';
 import '../../resources/strings/app_strings.dart';
 import '../../theme/app_colors.dart';
 import '../app_confirm_dialog.dart';
+import 'admin_content_transition.dart';
 import 'admin_navigation.dart';
 import 'admin_section.dart';
 import 'admin_sidebar.dart';
@@ -39,7 +40,7 @@ class AdminShell extends StatefulWidget {
 class _AdminShellState extends State<AdminShell> {
   static const double _autoCollapseBreakpoint = 1000;
 
-  bool? _isCollapsedByUser;
+  static bool? _isCollapsedByUser;
 
   void _select(AdminSection section) {
     if (section == widget.section && !widget.isSectionRoot) {
@@ -103,7 +104,7 @@ class _AdminShellState extends State<AdminShell> {
                                 _select(AdminSection.notifications),
                           ),
                           const SizedBox(height: 24),
-                          widget.child,
+                          AdminContentTransition(child: widget.child),
                         ],
                       ),
                     ),

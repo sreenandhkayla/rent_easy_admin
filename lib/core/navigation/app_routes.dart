@@ -7,11 +7,19 @@ import '../../features/shop_owners/presentation/pages/owner_details_page.dart';
 import '../../features/shop_owners/presentation/pages/shop_owners_page.dart';
 import '../../features/shops/presentation/pages/shop_details_page.dart';
 import '../../features/shops/presentation/pages/shops_page.dart';
+import '../../features/subscriptions/presentation/pages/create_plan_page.dart';
+import '../../features/subscriptions/presentation/pages/payment_details_page.dart';
+import '../../features/subscriptions/presentation/pages/plan_details_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_details_page.dart';
 import '../../features/subscriptions/presentation/pages/subscriptions_page.dart';
+import '../../features/subscriptions/presentation/state/subscriptions_state.dart';
+import 'app_page_route.dart';
 
 class AppRoutes {
   AppRoutes._();
+
+  static final RouteObserver<PageRoute<dynamic>> observer =
+      RouteObserver<PageRoute<dynamic>>();
 
   static const String login = '/';
   static const String accountRecovery = '/account-recovery';
@@ -21,9 +29,29 @@ class AppRoutes {
   static const String shops = '/shops';
   static const String subscriptions = '/subscriptions';
   static const String subscriptionDetails = '/subscriptions/details';
+  static const String createPlan = '/subscriptions/plans/create';
+  static const String planDetails = '/subscriptions/plans/details';
+  static const String paymentDetails = '/subscriptions/payments/details';
+  static final String subscriptionPayments = Uri(
+    path: subscriptions,
+    queryParameters: {'tab': 'payments'},
+  ).toString();
+
+  static String paymentDetailsFor(String transactionId) => Uri(
+    path: paymentDetails,
+    queryParameters: {'id': transactionId},
+  ).toString();
+
+  static String planDetailsFor(String planId) =>
+      Uri(path: planDetails, queryParameters: {'id': planId}).toString();
+
   static final String shopSubscriptions = Uri(
     path: subscriptions,
     queryParameters: {'tab': 'shops'},
+  ).toString();
+  static final String subscriptionPlans = Uri(
+    path: subscriptions,
+    queryParameters: {'tab': 'plans'},
   ).toString();
 
   static String subscriptionDetailsFor(String shopId) => Uri(
@@ -46,53 +74,77 @@ class AppRoutes {
     final Uri uri = Uri.parse(settings.name ?? login);
     switch (uri.path) {
       case subscriptions:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) => SubscriptionsPage(
-            showShopSubscriptions: uri.queryParameters['tab'] == 'shops',
+            initialTab: switch (uri.queryParameters['tab']) {
+              'shops' => SubscriptionsTab.shopSubscriptions,
+              'plans' => SubscriptionsTab.plans,
+              'payments' => SubscriptionsTab.payments,
+              'reconciliation' => SubscriptionsTab.reconciliation,
+              _ => SubscriptionsTab.overview,
+            },
           ),
         );
+      case paymentDetails:
+        return AppPageRoute<void>(
+          settings: settings,
+          builder: (_) =>
+              PaymentDetailsPage(transactionId: uri.queryParameters['id']),
+        );
+      case planDetails:
+        return AppPageRoute<void>(
+          settings: settings,
+          builder: (_) => PlanDetailsPage(planId: uri.queryParameters['id']),
+        );
+      case createPlan:
+        return AppPageRoute<void>(
+          settings: settings,
+          builder: (_) => const CreatePlanPage(),
+        );
       case subscriptionDetails:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) =>
               SubscriptionDetailsPage(shopId: uri.queryParameters['id']),
         );
       case shopDetails:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) => ShopDetailsPage(shopId: uri.queryParameters['id']),
         );
       case shops:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) =>
               ShopsPage(initialQuery: uri.queryParameters['q'] ?? ''),
         );
       case ownerDetails:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) => OwnerDetailsPage(ownerId: uri.queryParameters['id']),
         );
       case shopOwners:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) => const ShopOwnersPage(),
         );
       case dashboard:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
           builder: (_) => const DashboardPage(),
         );
       case accountRecovery:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
+          fadesWholePage: true,
           builder: (_) => const AccountRecoveryPage(),
         );
       case login:
       default:
-        return MaterialPageRoute<void>(
+        return AppPageRoute<void>(
           settings: settings,
+          fadesWholePage: true,
           builder: (_) => const LoginPage(),
         );
     }

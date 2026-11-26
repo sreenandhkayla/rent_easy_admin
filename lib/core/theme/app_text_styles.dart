@@ -320,4 +320,20 @@ class AppTextStyles {
     height: 1.45,
     color: AppColors.sidebarText,
   );
+
+  static const TextStyle bodyCaptionPrimary = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle bodySmallPrimary = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1,
+    color: AppColors.textPrimary,
+  );
 }

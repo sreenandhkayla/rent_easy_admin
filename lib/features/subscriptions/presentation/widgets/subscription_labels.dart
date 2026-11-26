@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../data/models/payment_attempt.dart';
 import '../../data/models/shop_subscription.dart';
+import '../../data/models/subscription_payment.dart';
 
 class SubscriptionLabels {
   SubscriptionLabels._();
@@ -70,6 +71,38 @@ class VerificationPill extends StatelessWidget {
       ),
       VerificationStatus.notVerified => const AppStatusPill(
         label: SubscriptionsStrings.notVerified,
+        color: AppColors.textSecondary,
+        backgroundColor: AppColors.iconCircle,
+      ),
+    };
+  }
+}
+
+class ReconciliationPill extends StatelessWidget {
+  const ReconciliationPill({super.key, required this.status});
+
+  final ReconciliationStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (status) {
+      ReconciliationStatus.matched => const AppStatusPill(
+        label: SubscriptionsStrings.matched,
+        color: AppColors.statusGreen,
+        backgroundColor: AppColors.pillGreenBackground,
+      ),
+      ReconciliationStatus.unmatched => const AppStatusPill(
+        label: SubscriptionsStrings.unmatched,
+        color: AppColors.pillRedText,
+        backgroundColor: AppColors.pillRedBackground,
+      ),
+      ReconciliationStatus.pending => const AppStatusPill(
+        label: SubscriptionsStrings.pending,
+        color: AppColors.pillAmberText,
+        backgroundColor: AppColors.pillAmberBackground,
+      ),
+      ReconciliationStatus.notApplicable => const AppStatusPill(
+        label: SubscriptionsStrings.notApplicable,
         color: AppColors.textSecondary,
         backgroundColor: AppColors.iconCircle,
       ),

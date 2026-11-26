@@ -11,12 +11,14 @@ class AppDropdown<T> extends StatelessWidget {
     required this.items,
     required this.labelOf,
     required this.onChanged,
+    this.isExpanded = false,
   });
 
   final T value;
   final List<T> items;
   final String Function(T item) labelOf;
   final ValueChanged<T> onChanged;
+  final bool isExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +49,10 @@ class AppDropdown<T> extends StatelessWidget {
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: isExpanded ? MainAxisSize.max : MainAxisSize.min,
           children: [
             Flexible(
+              fit: isExpanded ? FlexFit.tight : FlexFit.loose,
               child: Text(labelOf(value), style: AppTextStyles.tableCell),
             ),
             const SizedBox(width: 8),

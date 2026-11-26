@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../resources/strings/app_strings.dart';
 import '../theme/app_colors.dart';
@@ -11,6 +12,8 @@ class AppTextField extends StatefulWidget {
     this.controller,
     this.hintText,
     this.errorText,
+    this.helperText,
+    this.inputFormatters,
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
@@ -26,6 +29,8 @@ class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
   final String? hintText;
   final String? errorText;
+  final String? helperText;
+  final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -66,12 +71,16 @@ class _AppTextFieldState extends State<AppTextField> {
           autofillHints: widget.autofillHints,
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
+          inputFormatters: widget.inputFormatters,
           minLines: widget.minLines,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           style: AppTextStyles.input,
           decoration: InputDecoration(
             hintText: widget.hintText,
             errorText: widget.errorText,
+            helperText: widget.helperText,
+            helperStyle: AppTextStyles.bodyCaption,
+            helperMaxLines: 3,
             suffixIcon: widget.obscureText
                 ? IconButton(
                     onPressed: _toggleObscured,

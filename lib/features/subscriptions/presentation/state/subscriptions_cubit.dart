@@ -13,6 +13,9 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
     state.copyWith(
       overview: SubscriptionsMockData.overview(DateTime.now()),
       shopSubscriptions: SubscriptionsMockData.shopSubscriptions(),
+      plans: SubscriptionsMockData.plans(),
+      payments: SubscriptionsMockData.payments(),
+      reconciliationSummary: SubscriptionsMockData.reconciliationSummary(),
     ),
   );
 
@@ -21,6 +24,9 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
       shopSubscriptions: SubscriptionsMockData.shopSubscriptions(),
     ),
   );
+
+  void syncPlans() =>
+      emit(state.copyWith(plans: SubscriptionsMockData.plans()));
 
   void selectTab(SubscriptionsTab tab) => emit(state.copyWith(tab: tab));
 
@@ -34,4 +40,10 @@ class SubscriptionsCubit extends Cubit<SubscriptionsState> {
       emit(state.copyWith(expiryFilter: filter));
 
   void search(String query) => emit(state.copyWith(query: query));
+
+  void filterPayments(PaymentFilter filter) =>
+      emit(state.copyWith(paymentFilter: filter));
+
+  void searchPayments(String query) =>
+      emit(state.copyWith(paymentQuery: query));
 }
