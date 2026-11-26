@@ -3,7 +3,6 @@ import '../../../core/enums/subscription_plan.dart';
 import '../../shops/data/models/shop.dart';
 import '../../shops/data/shops_mock_data.dart';
 import 'models/payment_attempt.dart';
-import 'models/plan_definition.dart';
 import 'models/reconciliation_summary.dart';
 import 'models/subscription_payment.dart';
 import 'models/shop_subscription.dart';
@@ -44,93 +43,6 @@ class SubscriptionsMockData {
       updatedAt: updatedAt,
     );
   }
-
-  static List<PlanDefinition> plans() => List.of(_plans);
-
-  static void addPlan(PlanDefinition plan) => _plans.add(plan);
-
-  static PlanDefinition? plan(String id) {
-    for (final PlanDefinition item in _plans) {
-      if (item.id == id) return item;
-    }
-    return null;
-  }
-
-  static void archivePlan(String id, DateTime now) {
-    final int index = _plans.indexWhere((item) => item.id == id);
-    if (index < 0) return;
-    _plans[index] = _plans[index].copyWith(
-      status: PlanStatus.archived,
-      updatedAt: now,
-    );
-  }
-
-  static final List<PlanDefinition> _plans = [
-    PlanDefinition(
-      id: 'basic',
-      name: 'Basic',
-      price: 499,
-      billingPeriod: PlanBillingPeriod.month,
-      description:
-          'For single-location shops getting started with digital rental '
-          'records.',
-      features: [
-        'Item, customer and rental records',
-        'Up to 2 staff accounts',
-        'Return reminders',
-      ],
-      subscribedShops: 412,
-      limit: 'Up to 2 staff accounts',
-      updatedAt: DateTime(2026, 10, 2),
-      status: PlanStatus.active,
-    ),
-    PlanDefinition(
-      id: 'professional',
-      name: 'Professional',
-      price: 999,
-      billingPeriod: PlanBillingPeriod.month,
-      description:
-          'For busy shops that need maintenance tracking and payment reports.',
-      features: [
-        'Everything in Basic',
-        'Up to 6 staff accounts',
-        'Maintenance tracking',
-        'Payment reports',
-      ],
-      subscribedShops: 389,
-      limit: 'Up to 6 staff accounts',
-      updatedAt: DateTime(2026, 11, 14),
-      status: PlanStatus.active,
-    ),
-    PlanDefinition(
-      id: 'premium',
-      name: 'Premium',
-      price: 9999,
-      billingPeriod: PlanBillingPeriod.year,
-      description: 'Yearly plan for established shops with larger teams.',
-      features: [
-        'Everything in Professional',
-        'Unlimited staff accounts',
-        'Priority support',
-      ],
-      subscribedShops: 186,
-      limit: 'Unlimited staff accounts',
-      updatedAt: DateTime(2026, 9, 21),
-      status: PlanStatus.active,
-    ),
-    PlanDefinition(
-      id: 'starter',
-      name: 'Starter (legacy)',
-      price: 299,
-      billingPeriod: PlanBillingPeriod.month,
-      description: 'Retired introductory plan. Kept for history.',
-      features: ['Item and rental records', '1 staff account'],
-      subscribedShops: 0,
-      limit: '1 staff account',
-      updatedAt: DateTime(2025, 3, 31),
-      status: PlanStatus.archived,
-    ),
-  ];
 
   static List<SubscriptionPayment> payments() => [
     SubscriptionPayment(

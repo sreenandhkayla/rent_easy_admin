@@ -287,6 +287,20 @@ class SubscriptionsStrings {
       'One benefit per line. Shown to owners on the renewal screen.';
   static const String planLimitsLabel = 'Plan limits (where applicable)';
   static const String planLimitsHint = 'e.g. Up to 6 staff accounts';
+  static const String offerTagLabel = 'Offer tag';
+  static const String offerTagHint = 'e.g. Launch offer';
+  static const String offerPercentageLabel = 'Offer percentage (%)';
+  static const String offerPercentageHint = '0';
+  static const String offerPercentageHelper =
+      'Discount on the plan price. Leave empty for no offer.';
+  static const String offerPercentageInvalid =
+      'Enter a whole number from 0 to 99.';
+  static const String offer = 'Offer';
+  static const String noOffer = 'No offer';
+  static const String plansLoadFailedTitle = "Couldn't load plans";
+
+  static String offerSummary(int percentage, String offerPrice) =>
+      '$percentage% off · $offerPrice';
   static const String savePlan = 'Save plan';
   static const String planNameRequired = 'Enter a plan name.';
   static const String planPriceRequired = 'Enter a price above ₹0.';
@@ -300,6 +314,9 @@ class SubscriptionsStrings {
       'configured — they require approved billing rules.';
 
   static String planCreated(String name) => '$name plan created.';
+  static String planUpdated(String name) => '$name plan updated.';
+  static const String editPlanSubtitle = 'Update this subscription plan';
+  static const String saveChanges = 'Save changes';
 
   static const String planDetailsSubtitle = 'Plan details';
   static const String planNotFound = 'Plan not found';
@@ -323,9 +340,10 @@ class SubscriptionsStrings {
 
   static String archivePlanTitle(String name) => 'Archive the $name plan?';
 
-  static String archivePlanMessage(int subscriptions) {
+  static String archivePlanMessage(int? subscriptions) {
     const String lead = 'Owners can no longer buy or renew onto this plan.';
     return switch (subscriptions) {
+      null => '$lead Existing subscriptions continue until their expiry date.',
       0 => '$lead No existing subscriptions are affected.',
       1 => '$lead 1 existing subscription continues until its expiry date.',
       _ =>

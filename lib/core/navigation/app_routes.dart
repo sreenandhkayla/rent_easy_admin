@@ -82,6 +82,11 @@ class AppRoutes {
   static const String subscriptions = '/subscriptions';
   static const String subscriptionDetails = '/subscriptions/details';
   static const String createPlan = '/subscriptions/plans/create';
+  static const String editPlan = '/subscriptions/plans/edit';
+
+  static String editPlanFor(String planId) =>
+      Uri(path: editPlan, queryParameters: {'id': planId}).toString();
+
   static const String planDetails = '/subscriptions/plans/details';
   static const String paymentDetails = '/subscriptions/payments/details';
   static final String subscriptionPayments = Uri(
@@ -131,6 +136,7 @@ class AppRoutes {
     subscriptions: AdminSection.subscriptions,
     subscriptionDetails: AdminSection.subscriptions,
     createPlan: AdminSection.subscriptions,
+    editPlan: AdminSection.subscriptions,
     planDetails: AdminSection.subscriptions,
     paymentDetails: AdminSection.subscriptions,
     reports: AdminSection.reportsAndComplaints,
@@ -181,6 +187,13 @@ class AppRoutes {
           settings: settings,
           section: _sectionFor(uri.path),
           builder: (_) => PlanDetailsPage(planId: uri.queryParameters['id']),
+        );
+      case editPlan:
+        return AppPageRoute<void>(
+          settings: settings,
+          section: _sectionFor(uri.path),
+          builder: (_) =>
+              CreatePlanPage(planId: uri.queryParameters['id'] ?? ''),
         );
       case createPlan:
         return AppPageRoute<void>(

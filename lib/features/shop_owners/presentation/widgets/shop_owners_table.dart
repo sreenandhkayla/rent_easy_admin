@@ -7,8 +7,8 @@ import '../../../../core/resources/strings/shop_owners_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
-import '../../../../core/widgets/app_access_status_pill.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_initials_avatar.dart';
 import '../../../../core/widgets/app_pagination.dart';
@@ -17,6 +17,7 @@ import '../../../../core/widgets/app_sortable_header.dart';
 import '../../../../core/widgets/app_table_header.dart';
 import '../../data/models/shop_owner.dart';
 import '../state/shop_owners_state.dart';
+import 'owner_status_pill.dart';
 
 class ShopOwnersTable extends StatelessWidget {
   const ShopOwnersTable({
@@ -24,23 +25,47 @@ class ShopOwnersTable extends StatelessWidget {
     required this.state,
     required this.onSort,
     required this.onPageChanged,
+    required this.onPageSizeChanged,
+    required this.onRetry,
     required this.onView,
   });
 
   static const double _minTableWidth = 960;
+  static const double _progressHeight = 2;
 
   final ShopOwnersState state;
   final ValueChanged<OwnerSortField> onSort;
   final ValueChanged<int> onPageChanged;
+  final ValueChanged<int> onPageSizeChanged;
+  final VoidCallback onRetry;
   final ValueChanged<ShopOwner> onView;
+
+  Widget? _placeholder(List<ShopOwner> rows) {
+    final String? error = state.errorMessage;
+    if (error != null) {
+      return AppEmptyState(
+        icon: Icons.error_outline_rounded,
+        title: ShopOwnersStrings.loadFailedTitle,
+        message: error,
+        actionLabel: AppStrings.retry,
+        onAction: onRetry,
+      );
+    }
+    if (rows.isEmpty && !state.isLoading) {
+      return const AppEmptyState(
+        icon: Icons.search,
+        title: ShopOwnersStrings.noMatchesTitle,
+        message: ShopOwnersStrings.noMatchesMessage,
+      );
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<ShopOwner> rows = state.pageOwners;
-    final int total = state.filteredOwners.length;
-    final int start = total == 0
-        ? 0
-        : (state.page - 1) * ShopOwnersState.pageSize + 1;
+    final List<ShopOwner> rows = state.visibleRows;
+    final int total = state.totalCount;
+    final int start = rows.isEmpty ? 0 : state.firstRowNumber;
     final int end = start == 0 ? 0 : start + rows.length - 1;
     return AppCard(
       padding: EdgeInsets.zero,
@@ -61,14 +86,19 @@ class ShopOwnersTable extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _HeaderRow(state: state, onSort: onSort),
-                      if (rows.isEmpty)
-                        const AppEmptyState(
-                          icon: Icons.search,
-                          title: ShopOwnersStrings.noMatchesTitle,
-                          message: ShopOwnersStrings.noMatchesMessage,
-                        ),
-                      for (final ShopOwner owner in rows)
-                        _OwnerRow(owner: owner, onView: () => onView(owner)),
+                      SizedBox(
+                        height: _progressHeight,
+                        child: state.isLoading
+                            ? const LinearProgressIndicator(
+                                minHeight: _progressHeight,
+                              )
+                            : null,
+                      ),
+                      if (_placeholder(rows) case final Widget placeholder)
+                        placeholder
+                      else
+                        for (final ShopOwner owner in rows)
+                          _OwnerRow(owner: owner, onView: () => onView(owner)),
                     ],
                   ),
                 ),
@@ -87,10 +117,23 @@ class ShopOwnersTable extends StatelessWidget {
                   ShopOwnersStrings.showingRange(start, end, total),
                   style: AppTextStyles.bodyCaption,
                 ),
-                AppPagination(
-                  currentPage: state.page,
-                  pageCount: state.pageCount,
-                  onPageChanged: onPageChanged,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    AppDropdown<int>(
+                      value: state.pageSize,
+                      items: ShopOwnersState.pageSizes,
+                      labelOf: ShopOwnersStrings.perPage,
+                      onChanged: onPageSizeChanged,
+                    ),
+                    AppPagination(
+                      currentPage: state.page,
+                      pageCount: state.pageCount,
+                      onPageChanged: onPageChanged,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -102,9 +145,9 @@ class ShopOwnersTable extends StatelessWidget {
 }
 
 class _Columns {
-  static const int name = 30;
+  static const int name = 22;
   static const int mobile = 13;
-  static const int ownerId = 10;
+  static const int ownerId = 18;
   static const int registered = 12;
   static const int shops = 6;
   static const int subscribed = 8;
@@ -188,6 +231,9 @@ class _OwnerRow extends StatelessWidget {
   final ShopOwner owner;
   final VoidCallback onView;
 
+  String get _name =>
+      owner.name.isEmpty ? ShopOwnersStrings.unnamedOwner : owner.name;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -201,17 +247,22 @@ class _OwnerRow extends StatelessWidget {
             flex: _Columns.name,
             child: Row(
               children: [
-                AppInitialsAvatar(name: owner.name, size: 30, isMuted: true),
+                AppInitialsAvatar(name: _name, size: 30, isMuted: true),
                 const SizedBox(width: 10),
                 Flexible(
-                  child: Text(owner.name, style: AppTextStyles.tableCellStrong),
+                  child: Text(_name, style: AppTextStyles.tableCellStrong),
                 ),
               ],
             ),
           ),
           Expanded(
             flex: _Columns.mobile,
-            child: Text(owner.mobile, style: AppTextStyles.tableCell),
+            child: Text(
+              owner.mobile.isEmpty
+                  ? ShopOwnersStrings.emptyValue
+                  : owner.mobile,
+              style: AppTextStyles.tableCell,
+            ),
           ),
           Expanded(
             flex: _Columns.ownerId,
@@ -219,10 +270,10 @@ class _OwnerRow extends StatelessWidget {
           ),
           Expanded(
             flex: _Columns.registered,
-            child: Text(
-              AppFormatters.date(owner.registeredAt),
-              style: AppTextStyles.tableCell,
-            ),
+            child: Text(switch (owner.registeredAt) {
+              final DateTime date => AppFormatters.date(date),
+              null => ShopOwnersStrings.emptyValue,
+            }, style: AppTextStyles.tableCell),
           ),
           Expanded(
             flex: _Columns.shops,
@@ -235,7 +286,8 @@ class _OwnerRow extends StatelessWidget {
           Expanded(
             flex: _Columns.subscribed,
             child: Text(
-              '${owner.subscribedShops}',
+              owner.subscribedShops?.toString() ??
+                  ShopOwnersStrings.notAvailable,
               style: AppTextStyles.tableCell,
               textAlign: TextAlign.end,
             ),
@@ -245,9 +297,7 @@ class _OwnerRow extends StatelessWidget {
             flex: _Columns.status,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: AppAccessStatusPill(
-                isRestricted: owner.status == OwnerStatus.restricted,
-              ),
+              child: OwnerStatusPill(status: owner.status),
             ),
           ),
           SizedBox(

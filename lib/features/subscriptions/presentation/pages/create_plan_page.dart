@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
 import '../../../../core/utils/app_messenger.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
 import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_breadcrumbs.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../data/models/plan_definition.dart';
 import '../state/create_plan_cubit.dart';
@@ -15,7 +19,9 @@ import '../widgets/create_plan_form_card.dart';
 import '../widgets/plan_preview_card.dart';
 
 class CreatePlanPage extends StatelessWidget {
-  const CreatePlanPage({super.key});
+  const CreatePlanPage({super.key, this.planId});
+
+  final String? planId;
 
   static const double _twoColumnBreakpoint = 1000;
 
@@ -28,17 +34,21 @@ class CreatePlanPage extends StatelessWidget {
     }
   }
 
-  void _save(BuildContext context) {
-    final PlanDefinition? plan = context.read<CreatePlanCubit>().save();
-    if (plan == null) return;
-    context.showAppMessage(SubscriptionsStrings.planCreated(plan.name));
+  Future<void> _save(BuildContext context) async {
+    final PlanDefinition? plan = await context.read<CreatePlanCubit>().save();
+    if (plan == null || !context.mounted) return;
+    context.showAppMessage(
+      planId == null
+          ? SubscriptionsStrings.planCreated(plan.name)
+          : SubscriptionsStrings.planUpdated(plan.name),
+    );
     _backToPlans(context, saved: true);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CreatePlanCubit(),
+      create: (_) => getIt<CreatePlanCubit>(param1: planId)..load(),
       child: BlocBuilder<CreatePlanCubit, CreatePlanState>(
         builder: (context, state) {
           final CreatePlanCubit cubit = context.read<CreatePlanCubit>();
@@ -51,15 +61,25 @@ class CreatePlanPage extends StatelessWidget {
             onBillingPeriodChanged: cubit.setBillingPeriod,
             onBenefitsChanged: cubit.setBenefits,
             onLimitChanged: cubit.setLimit,
+            onOfferTagChanged: cubit.setOfferTag,
+            onOfferPercentageChanged: cubit.setOfferPercentage,
             onCancel: () => _backToPlans(context),
             onSave: () => _save(context),
+            saveLabel: state.isEditing
+                ? SubscriptionsStrings.saveChanges
+                : SubscriptionsStrings.savePlan,
           );
+          final String title = state.isEditing
+              ? SubscriptionsStrings.editPlan
+              : SubscriptionsStrings.createPlan;
           final Widget preview = PlanPreviewCard(state: state);
           return AdminShell(
             section: AdminSection.subscriptions,
             isSectionRoot: false,
-            title: SubscriptionsStrings.createPlan,
-            subtitle: SubscriptionsStrings.createPlanSubtitle,
+            title: title,
+            subtitle: state.isEditing
+                ? SubscriptionsStrings.editPlanSubtitle
+                : SubscriptionsStrings.createPlanSubtitle,
             breadcrumb: AppBreadcrumbs(
               items: [
                 AppBreadcrumb(
@@ -73,7 +93,7 @@ class CreatePlanPage extends StatelessWidget {
                   SubscriptionsStrings.tabPlans,
                   onTap: () => _backToPlans(context),
                 ),
-                const AppBreadcrumb(SubscriptionsStrings.createPlan),
+                AppBreadcrumb(title),
               ],
             ),
             headerActions: [
@@ -82,24 +102,46 @@ class CreatePlanPage extends StatelessWidget {
                 onPressed: cubit.refresh,
               ),
             ],
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < _twoColumnBreakpoint) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [form, const SizedBox(height: 16), preview],
+            child: switch (state.formStatus) {
+              PlanFormStatus.loading => const Padding(
+                padding: EdgeInsets.all(48),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              PlanFormStatus.notFound => const AppCard(
+                child: AppEmptyState(
+                  icon: Icons.search_off_rounded,
+                  title: SubscriptionsStrings.planNotFound,
+                  message: SubscriptionsStrings.planNotFoundMessage,
+                ),
+              ),
+              PlanFormStatus.failure => AppCard(
+                child: AppEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: SubscriptionsStrings.planNotFound,
+                  message: state.errorMessage ?? AppStrings.recordsLoadFailed,
+                  actionLabel: AppStrings.retry,
+                  onAction: cubit.load,
+                ),
+              ),
+              PlanFormStatus.ready => LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < _twoColumnBreakpoint) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [form, const SizedBox(height: 16), preview],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: form),
+                      const SizedBox(width: 16),
+                      Expanded(child: preview),
+                    ],
                   );
-                }
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 2, child: form),
-                    const SizedBox(width: 16),
-                    Expanded(child: preview),
-                  ],
-                );
-              },
-            ),
+                },
+              ),
+            },
           );
         },
       ),

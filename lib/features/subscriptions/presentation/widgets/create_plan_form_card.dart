@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
+import '../../../../core/widgets/app_notice_banner.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_secondary_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -25,8 +27,11 @@ class CreatePlanFormCard extends StatelessWidget {
     required this.onBillingPeriodChanged,
     required this.onBenefitsChanged,
     required this.onLimitChanged,
+    required this.onOfferTagChanged,
+    required this.onOfferPercentageChanged,
     required this.onCancel,
     required this.onSave,
+    required this.saveLabel,
   });
 
   final CreatePlanState state;
@@ -37,8 +42,11 @@ class CreatePlanFormCard extends StatelessWidget {
   final ValueChanged<PlanBillingPeriod> onBillingPeriodChanged;
   final ValueChanged<String> onBenefitsChanged;
   final ValueChanged<String> onLimitChanged;
+  final ValueChanged<String> onOfferTagChanged;
+  final ValueChanged<String> onOfferPercentageChanged;
   final VoidCallback onCancel;
   final VoidCallback onSave;
+  final String saveLabel;
 
   static const double _gap = 20;
 
@@ -53,6 +61,7 @@ class CreatePlanFormCard extends StatelessWidget {
             first: AppTextField(
               label: SubscriptionsStrings.planNameLabel,
               hintText: SubscriptionsStrings.planNameHint,
+              initialValue: state.name,
               errorText: state.showNameError
                   ? SubscriptionsStrings.planNameRequired
                   : null,
@@ -70,10 +79,19 @@ class CreatePlanFormCard extends StatelessWidget {
               ),
             ),
           ),
+          if (state.isArchiving) ...[
+            const SizedBox(height: 12),
+            const AppNoticeBanner(
+              tone: AppNoticeTone.warning,
+              icon: Icons.archive_outlined,
+              message: SubscriptionsStrings.archivePlanNote,
+            ),
+          ],
           const SizedBox(height: _gap),
           AppTextField(
             label: SubscriptionsStrings.planDescriptionLabel,
             hintText: SubscriptionsStrings.planDescriptionHint,
+            initialValue: state.description,
             keyboardType: TextInputType.multiline,
             minLines: 3,
             maxLines: 5,
@@ -84,6 +102,7 @@ class CreatePlanFormCard extends StatelessWidget {
             first: AppTextField(
               label: SubscriptionsStrings.planPriceLabel,
               hintText: SubscriptionsStrings.planPriceHint,
+              initialValue: state.price,
               errorText: state.showPriceError
                   ? SubscriptionsStrings.planPriceRequired
                   : null,
@@ -104,9 +123,36 @@ class CreatePlanFormCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: _gap),
+          _FieldPair(
+            first: AppTextField(
+              label: SubscriptionsStrings.offerTagLabel,
+              hintText: SubscriptionsStrings.offerTagHint,
+              initialValue: state.offerTag,
+              textInputAction: TextInputAction.next,
+              onChanged: onOfferTagChanged,
+            ),
+            second: AppTextField(
+              label: SubscriptionsStrings.offerPercentageLabel,
+              hintText: SubscriptionsStrings.offerPercentageHint,
+              initialValue: state.offerPercentage,
+              helperText: SubscriptionsStrings.offerPercentageHelper,
+              errorText: state.showOfferError
+                  ? SubscriptionsStrings.offerPercentageInvalid
+                  : null,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ],
+              textInputAction: TextInputAction.next,
+              onChanged: onOfferPercentageChanged,
+            ),
+          ),
+          const SizedBox(height: _gap),
           AppTextField(
             label: SubscriptionsStrings.planBenefitsLabel,
             hintText: SubscriptionsStrings.planBenefitsHint,
+            initialValue: state.benefits,
             helperText: SubscriptionsStrings.planBenefitsHelper,
             keyboardType: TextInputType.multiline,
             minLines: 3,
@@ -117,8 +163,13 @@ class CreatePlanFormCard extends StatelessWidget {
           AppTextField(
             label: SubscriptionsStrings.planLimitsLabel,
             hintText: SubscriptionsStrings.planLimitsHint,
+            initialValue: state.limit,
             onChanged: onLimitChanged,
           ),
+          if (state.errorMessage case final String message) ...[
+            const SizedBox(height: 14),
+            Text(message, style: AppTextStyles.fieldError),
+          ],
           const Divider(height: 40, color: AppColors.divider),
           Wrap(
             alignment: WrapAlignment.end,
@@ -127,7 +178,7 @@ class CreatePlanFormCard extends StatelessWidget {
             children: [
               AppSecondaryButton(label: AppStrings.cancel, onPressed: onCancel),
               AppPrimaryButton(
-                label: SubscriptionsStrings.savePlan,
+                label: saveLabel,
                 icon: Icons.check,
                 isCompact: true,
                 isLoading: state.isSaving,

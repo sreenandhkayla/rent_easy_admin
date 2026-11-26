@@ -4,18 +4,22 @@ import '../../../../core/resources/strings/shop_owners_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
-import '../../../../core/widgets/app_access_status_pill.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_detail_field.dart';
 import '../../../../core/widgets/app_initials_avatar.dart';
 import '../../../../core/widgets/app_responsive_grid.dart';
 import '../../data/models/owner_details.dart';
 import '../../data/models/shop_owner.dart';
+import 'owner_status_pill.dart';
 
 class OwnerProfileCard extends StatelessWidget {
   const OwnerProfileCard({super.key, required this.details});
 
   final OwnerDetails details;
+
+  String get _name => details.owner.name.isEmpty
+      ? ShopOwnersStrings.unnamedOwner
+      : details.owner.name;
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +31,13 @@ class OwnerProfileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppInitialsAvatar(name: owner.name, size: 56),
+              AppInitialsAvatar(name: _name, size: 56),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(owner.name, style: AppTextStyles.profileName),
+                    Text(_name, style: AppTextStyles.profileName),
                     const SizedBox(height: 4),
                     Text(
                       ShopOwnersStrings.ownerSummary(
@@ -46,9 +50,7 @@ class OwnerProfileCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              AppAccessStatusPill(
-                isRestricted: owner.status == OwnerStatus.restricted,
-              ),
+              OwnerStatusPill(status: owner.status),
             ],
           ),
           const Divider(height: 36, color: AppColors.divider),
@@ -67,7 +69,10 @@ class OwnerProfileCard extends StatelessWidget {
               ),
               AppDetailField(
                 label: ShopOwnersStrings.registrationDate,
-                value: AppFormatters.date(owner.registeredAt),
+                value: switch (owner.registeredAt) {
+                  final DateTime date => AppFormatters.date(date),
+                  null => ShopOwnersStrings.emptyValue,
+                },
               ),
               AppDetailField(
                 label: ShopOwnersStrings.numberOfShops,
@@ -75,11 +80,15 @@ class OwnerProfileCard extends StatelessWidget {
               ),
               AppDetailField(
                 label: ShopOwnersStrings.subscribedShops,
-                value: '${owner.subscribedShops}',
+                value:
+                    owner.subscribedShops?.toString() ??
+                    ShopOwnersStrings.notAvailable,
               ),
               AppDetailField(
                 label: ShopOwnersStrings.unsubscribedOrExpired,
-                value: '${details.unsubscribedOrExpired}',
+                value:
+                    details.unsubscribedOrExpired?.toString() ??
+                    ShopOwnersStrings.notAvailable,
               ),
             ],
           ),

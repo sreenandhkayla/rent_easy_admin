@@ -1,1 +1,19 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options_dev.dart":{"projectId":"rental-management-dev-9a1b0","configurations":{"macos":"1:287484429494:ios:a517937880c5caa5dd5217","web":"1:287484429494:web:8382b0b9ee93f645dd5217","windows":"1:287484429494:web:15ffccf25a417eb6dd5217"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options_dev.dart": {
+          "projectId": "rental-management-dev-9a1b0",
+          "configurations": {
+            "macos": "1:287484429494:ios:a517937880c5caa5dd5217",
+            "web": "1:287484429494:web:8382b0b9ee93f645dd5217",
+            "windows": "1:287484429494:web:15ffccf25a417eb6dd5217"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "indexes": "firestore.indexes.json"
+  }
+}

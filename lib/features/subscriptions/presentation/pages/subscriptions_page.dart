@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
@@ -40,8 +41,8 @@ class SubscriptionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => SubscriptionsCubit(
-        initialTab: _builtTabs.contains(initialTab)
+      create: (_) => getIt<SubscriptionsCubit>(
+        param1: _builtTabs.contains(initialTab)
             ? initialTab
             : SubscriptionsTab.overview,
       )..load(),
@@ -93,18 +94,24 @@ class SubscriptionsPage extends StatelessWidget {
                       else if (state.tab == SubscriptionsTab.plans)
                         PlansTab(
                           plans: state.plans,
+                          isLoading: state.isPlansLoading,
+                          errorMessage: state.plansError,
+                          onRetry: cubit.loadPlans,
                           onCreatePlan: () async {
-                            await Navigator.of(context)
+                            final Object? saved = await Navigator.of(context)
                                 .pushNamed(AppRoutes.createPlan);
-                            cubit.syncPlans();
+                            if (saved == true) cubit.loadPlans();
                           },
                           onViewDetails: (plan) async {
-                            await Navigator.of(context)
+                            final Object? changed = await Navigator.of(context)
                                 .pushNamed(AppRoutes.planDetailsFor(plan.id));
-                            cubit.syncPlans();
+                            if (changed == true) cubit.loadPlans();
                           },
-                          onEdit: (_) =>
-                              _notBuilt(context, SubscriptionsStrings.editPlan),
+                          onEdit: (plan) async {
+                            final Object? saved = await Navigator.of(context)
+                                .pushNamed(AppRoutes.editPlanFor(plan.id));
+                            if (saved == true) cubit.loadPlans();
+                          },
                         )
                       else if (state.tab == SubscriptionsTab.payments)
                         SubscriptionPaymentsTab(

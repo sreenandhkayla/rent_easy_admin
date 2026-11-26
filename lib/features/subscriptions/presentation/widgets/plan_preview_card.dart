@@ -4,11 +4,11 @@ import '../../../../core/resources/strings/subscriptions_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../state/create_plan_state.dart';
 import 'plan_benefit_row.dart';
-import 'plan_labels.dart';
+import 'plan_offer_tag.dart';
+import 'plan_price.dart';
 
 class PlanPreviewCard extends StatelessWidget {
   const PlanPreviewCard({super.key, required this.state});
@@ -19,7 +19,7 @@ class PlanPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String name = state.name.trim();
     final String description = state.description.trim();
-    final int? price = state.priceValue;
+    final String offerTag = state.offerTag.trim();
     final List<String> benefits = [
       ...state.benefitLines,
       if (state.limit.trim().isNotEmpty &&
@@ -49,25 +49,17 @@ class PlanPreviewCard extends StatelessWidget {
                   name.isEmpty ? SubscriptionsStrings.previewName : name,
                   style: AppTextStyles.cardTitle,
                 ),
+                if (offerTag.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  PlanOfferTag(label: offerTag),
+                ],
                 const SizedBox(height: 12),
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.end,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      price == null
-                          ? SubscriptionsStrings.previewPrice
-                          : AppFormatters.rupees(price),
-                      style: AppTextStyles.statValueMedium,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 2),
-                      child: Text(
-                        PlanLabels.perPeriod(state.billingPeriod),
-                        style: AppTextStyles.bodyCaption,
-                      ),
-                    ),
-                  ],
+                PlanPrice(
+                  price: state.priceValue,
+                  billingPeriod: state.billingPeriod,
+                  offerPercentage: state.isOfferValid
+                      ? state.offerPercentageValue
+                      : 0,
                 ),
                 const SizedBox(height: 12),
                 Text(

@@ -10,6 +10,8 @@ import '../../../../core/widgets/app_responsive_grid.dart';
 import '../../data/models/plan_definition.dart';
 import 'plan_benefit_row.dart';
 import 'plan_labels.dart';
+import 'plan_offer_tag.dart';
+import 'plan_price.dart';
 import 'plan_status_pill.dart';
 
 class PlanOverviewCard extends StatelessWidget {
@@ -29,28 +31,23 @@ class PlanOverviewCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.end,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      AppFormatters.rupees(plan.price),
-                      style: AppTextStyles.statValueMedium,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 2),
-                      child: Text(
-                        PlanLabels.perPeriod(plan.billingPeriod),
-                        style: AppTextStyles.bodyCaption,
-                      ),
-                    ),
-                  ],
+                child: PlanPrice(
+                  price: plan.price,
+                  billingPeriod: plan.billingPeriod,
+                  offerPercentage: plan.offerPercentage,
                 ),
               ),
               const SizedBox(width: 12),
               PlanStatusPill(status: plan.status),
             ],
           ),
+          if (plan.offerTag case final String tag) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: PlanOfferTag(label: tag),
+            ),
+          ],
           if (plan.description.isNotEmpty) ...[
             const SizedBox(height: 14),
             Text(plan.description, style: AppTextStyles.bodySmall),
@@ -70,12 +67,27 @@ class PlanOverviewCard extends StatelessWidget {
                 value: plan.limit ?? SubscriptionsStrings.emptyValue,
               ),
               AppDetailField(
+                label: SubscriptionsStrings.offer,
+                value: plan.hasDiscount
+                    ? SubscriptionsStrings.offerSummary(
+                        plan.offerPercentage,
+                        AppFormatters.rupees(plan.offerPrice),
+                      )
+                    : SubscriptionsStrings.noOffer,
+              ),
+              AppDetailField(
                 label: SubscriptionsStrings.subscribedShops,
-                value: AppFormatters.number(plan.subscribedShops),
+                value: switch (plan.subscribedShops) {
+                  final int count => AppFormatters.number(count),
+                  null => SubscriptionsStrings.emptyValue,
+                },
               ),
               AppDetailField(
                 label: SubscriptionsStrings.lastUpdated,
-                value: AppFormatters.date(plan.updatedAt),
+                value: switch (plan.updatedAt) {
+                  final DateTime date => AppFormatters.date(date),
+                  null => SubscriptionsStrings.emptyValue,
+                },
               ),
             ],
           ),

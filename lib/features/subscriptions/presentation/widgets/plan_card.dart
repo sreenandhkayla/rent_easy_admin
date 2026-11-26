@@ -8,7 +8,8 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_secondary_button.dart';
 import '../../data/models/plan_definition.dart';
 import 'plan_benefit_row.dart';
-import 'plan_labels.dart';
+import 'plan_offer_tag.dart';
+import 'plan_price.dart';
 import 'plan_status_pill.dart';
 
 class PlanCard extends StatelessWidget {
@@ -38,23 +39,18 @@ class PlanCard extends StatelessWidget {
               PlanStatusPill(status: plan.status),
             ],
           ),
+          if (plan.offerTag case final String tag) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: PlanOfferTag(label: tag),
+            ),
+          ],
           const SizedBox(height: 14),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.end,
-            spacing: 6,
-            children: [
-              Text(
-                AppFormatters.rupees(plan.price),
-                style: AppTextStyles.statValueMedium,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  PlanLabels.perPeriod(plan.billingPeriod),
-                  style: AppTextStyles.bodyCaption,
-                ),
-              ),
-            ],
+          PlanPrice(
+            price: plan.price,
+            billingPeriod: plan.billingPeriod,
+            offerPercentage: plan.offerPercentage,
           ),
           if (plan.description.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -76,10 +72,10 @@ class PlanCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                AppFormatters.number(plan.subscribedShops),
-                style: AppTextStyles.titleSmall,
-              ),
+              Text(switch (plan.subscribedShops) {
+                final int count => AppFormatters.number(count),
+                null => SubscriptionsStrings.emptyValue,
+              }, style: AppTextStyles.titleSmall),
             ],
           ),
           const SizedBox(height: 14),

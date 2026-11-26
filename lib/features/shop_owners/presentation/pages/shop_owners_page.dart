@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
+import '../../../../core/enums/registration_date_filter.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/images/app_images.dart';
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shop_owners_strings.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
 import '../../../../core/widgets/admin_shell/admin_shell.dart';
@@ -21,7 +24,7 @@ class ShopOwnersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ShopOwnersCubit()..load(),
+      create: (_) => getIt<ShopOwnersCubit>()..load(),
       child: BlocBuilder<ShopOwnersCubit, ShopOwnersState>(
         builder: (context, state) {
           final ShopOwnersCubit cubit = context.read<ShopOwnersCubit>();
@@ -34,7 +37,17 @@ class ShopOwnersPage extends StatelessWidget {
               if (updatedAt != null)
                 AppRefreshButton(updatedAt: updatedAt, onPressed: cubit.load),
             ],
-            child: state.isLoading && state.owners.isEmpty
+            child: !state.hasLoaded && state.errorMessage != null
+                ? AppCard(
+                    child: AppEmptyState(
+                      icon: Icons.error_outline_rounded,
+                      title: ShopOwnersStrings.loadFailedTitle,
+                      message: state.errorMessage!,
+                      actionLabel: AppStrings.retry,
+                      onAction: cubit.retry,
+                    ),
+                  )
+                : !state.hasLoaded
                 ? const AppListSkeleton()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,7 +61,11 @@ class ShopOwnersPage extends StatelessWidget {
                         onDateChanged: cubit.filterByRegistrationDate,
                       ),
                       const SizedBox(height: 16),
-                      if (state.owners.isEmpty)
+                      if (state.totalOnPlatform == 0 &&
+                          state.totalCount == 0 &&
+                          !state.isSearching &&
+                          state.statusFilter == OwnerStatusFilter.all &&
+                          state.dateFilter == RegistrationDateFilter.any)
                         const AppCard(
                           child: AppEmptyState(
                             svgIcon: AppImages.inboxIcon,
@@ -61,11 +78,14 @@ class ShopOwnersPage extends StatelessWidget {
                           state: state,
                           onSort: cubit.sortBy,
                           onPageChanged: cubit.goToPage,
+                          onPageSizeChanged: cubit.setPageSize,
+                          onRetry: cubit.retry,
                           onView: (owner) async {
-                            await Navigator.of(context).pushNamed(
-                              AppRoutes.ownerDetailsFor(owner.ownerId),
-                            );
-                            cubit.syncOwners();
+                            final Object? changed = await Navigator.of(context)
+                                .pushNamed(
+                                  AppRoutes.ownerDetailsFor(owner.ownerId),
+                                );
+                            if (changed == true) cubit.load();
                           },
                         ),
                     ],

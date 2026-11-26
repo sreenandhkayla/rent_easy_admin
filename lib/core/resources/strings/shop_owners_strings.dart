@@ -10,6 +10,10 @@ class ShopOwnersStrings {
   static const String allStatuses = 'All statuses';
   static const String active = 'Active';
   static const String restricted = 'Restricted';
+  static const String deleted = 'Deleted';
+  static const String notAvailable = 'N/A';
+  static const String unnamedOwner = 'Unnamed owner';
+  static const String loadFailedTitle = "Couldn't load shop owners";
 
   static const String ownerName = 'Owner name';
   static const String mobileNumber = 'Mobile number';
@@ -54,6 +58,10 @@ class ShopOwnersStrings {
       'Customers, items and rentals of this owner are not shown in the '
       'Admin Web.';
   static const String administrativeActivity = 'Administrative activity';
+  static const String activityRegistered = 'Owner account registered';
+  static const String activitySystem = 'System';
+  static const String deletedAccountNote =
+      'This account has been deleted, so it cannot be restricted or restored.';
 
   static const String restrictMessage =
       'The owner will be signed out of the Owner App and cannot sign in '
@@ -70,13 +78,17 @@ class ShopOwnersStrings {
   static String restrictedMessage(String name) => '$name has been restricted.';
   static String restoredMessage(String name) => '$name has been restored.';
 
-  static String ownerSummary(String ownerId, DateTime registeredAt) =>
-      '$ownerId · Registered ${AppFormatters.date(registeredAt)}';
+  static String ownerSummary(String ownerId, DateTime? registeredAt) =>
+      registeredAt == null
+      ? ownerId
+      : '$ownerId · Registered ${AppFormatters.date(registeredAt)}';
+
+  static String perPage(int size) => '$size per page';
 
   static String ownersOnPlatform(int count) =>
       '${AppFormatters.number(count)} owners on platform';
 
   static String showingRange(int start, int end, int total) => total == 0
-      ? 'Showing 0 of 0 sample records'
-      : 'Showing $start–$end of $total sample records';
+      ? 'Showing 0 of 0 owners'
+      : 'Showing $start–$end of ${AppFormatters.number(total)} owners';
 }

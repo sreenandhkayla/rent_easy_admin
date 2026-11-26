@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
@@ -12,6 +13,7 @@ import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_breadcrumbs.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_text_link.dart';
 import '../../data/models/plan_definition.dart';
@@ -25,10 +27,10 @@ class PlanDetailsPage extends StatelessWidget {
 
   final String? planId;
 
-  static void _backToPlans(BuildContext context) {
+  static void _backToPlans(BuildContext context, {bool changed = false}) {
     final NavigatorState navigator = Navigator.of(context);
     if (navigator.canPop()) {
-      navigator.pop();
+      navigator.pop(changed);
     } else {
       navigator.pushReplacementNamed(AppRoutes.subscriptionPlans);
     }
@@ -37,7 +39,7 @@ class PlanDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PlanDetailsCubit(planId)..load(),
+      create: (_) => getIt<PlanDetailsCubit>(param1: planId)..load(),
       child: BlocBuilder<PlanDetailsCubit, PlanDetailsState>(
         builder: (context, state) {
           final PlanDefinition? plan = state.plan;
@@ -45,44 +47,60 @@ class PlanDetailsPage extends StatelessWidget {
           final String title = plan == null
               ? SubscriptionsStrings.planNotFound
               : SubscriptionsStrings.planTitle(plan.name);
-          return AdminShell(
-            section: AdminSection.subscriptions,
-            isSectionRoot: false,
-            title: title,
-            subtitle: SubscriptionsStrings.planDetailsSubtitle,
-            breadcrumb: AppBreadcrumbs(
-              items: [
-                AppBreadcrumb(
-                  SubscriptionsStrings.title,
-                  onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.subscriptions,
-                    (_) => false,
+          return PopScope<Object?>(
+            canPop: !state.hasChanges,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) Navigator.of(context).pop(true);
+            },
+            child: AdminShell(
+              section: AdminSection.subscriptions,
+              isSectionRoot: false,
+              title: title,
+              subtitle: SubscriptionsStrings.planDetailsSubtitle,
+              breadcrumb: AppBreadcrumbs(
+                items: [
+                  AppBreadcrumb(
+                    SubscriptionsStrings.title,
+                    onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                      AppRoutes.subscriptions,
+                      (_) => false,
+                    ),
+                  ),
+                  AppBreadcrumb(
+                    SubscriptionsStrings.tabPlans,
+                    onTap: () =>
+                        _backToPlans(context, changed: state.hasChanges),
+                  ),
+                  AppBreadcrumb(title),
+                ],
+              ),
+              headerActions: [
+                if (updatedAt != null)
+                  AppRefreshButton(
+                    updatedAt: updatedAt,
+                    onPressed: context.read<PlanDetailsCubit>().load,
+                  ),
+              ],
+              child: switch (state.status) {
+                PlanDetailsStatus.loading => const Padding(
+                  padding: EdgeInsets.all(48),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                PlanDetailsStatus.failure => AppCard(
+                  child: AppEmptyState(
+                    icon: Icons.error_outline_rounded,
+                    title: SubscriptionsStrings.planNotFound,
+                    message: state.errorMessage ?? AppStrings.recordsLoadFailed,
+                    actionLabel: AppStrings.retry,
+                    onAction: context.read<PlanDetailsCubit>().load,
                   ),
                 ),
-                AppBreadcrumb(
-                  SubscriptionsStrings.tabPlans,
-                  onTap: () => _backToPlans(context),
+                PlanDetailsStatus.notFound => _NotFound(
+                  onBack: () => _backToPlans(context),
                 ),
-                AppBreadcrumb(title),
-              ],
+                PlanDetailsStatus.loaded => _DetailsBody(plan: plan!),
+              },
             ),
-            headerActions: [
-              if (updatedAt != null)
-                AppRefreshButton(
-                  updatedAt: updatedAt,
-                  onPressed: context.read<PlanDetailsCubit>().load,
-                ),
-            ],
-            child: switch (state.status) {
-              PlanDetailsStatus.loading => const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              PlanDetailsStatus.notFound => _NotFound(
-                onBack: () => _backToPlans(context),
-              ),
-              PlanDetailsStatus.loaded => _DetailsBody(plan: plan!),
-            },
           );
         },
       ),
@@ -111,8 +129,11 @@ class _DetailsBody extends StatelessWidget {
       borderRadius: AppTheme.radiusDialog,
     );
     if (!confirmed || !context.mounted) return;
-    cubit.archive();
-    context.showAppMessage(SubscriptionsStrings.planArchivedSnack(plan.name));
+    final String? error = await cubit.archive();
+    if (!context.mounted) return;
+    context.showAppMessage(
+      error ?? SubscriptionsStrings.planArchivedSnack(plan.name),
+    );
   }
 
   @override
@@ -120,9 +141,12 @@ class _DetailsBody extends StatelessWidget {
     final Widget main = PlanOverviewCard(plan: plan);
     final Widget side = PlanActionsCard(
       isArchived: plan.isArchived,
-      onEdit: () => context.showAppMessage(
-        AppStrings.sectionNotBuilt(SubscriptionsStrings.editPlan),
-      ),
+      onEdit: () async {
+        final PlanDetailsCubit cubit = context.read<PlanDetailsCubit>();
+        final Object? saved = await Navigator.of(context)
+            .pushNamed(AppRoutes.editPlanFor(plan.id));
+        if (saved == true) cubit.reloadAfterEdit();
+      },
       onArchive: () => _archive(context),
     );
     return LayoutBuilder(

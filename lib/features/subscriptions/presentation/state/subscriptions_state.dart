@@ -36,6 +36,8 @@ class SubscriptionsState {
     this.tab = SubscriptionsTab.overview,
     this.shopSubscriptions = const [],
     this.plans = const [],
+    this.isPlansLoading = false,
+    this.plansError,
     this.payments = const [],
     this.reconciliationSummary,
     this.paymentFilter = PaymentFilter.all,
@@ -57,6 +59,8 @@ class SubscriptionsState {
   final SubscriptionsTab tab;
   final List<ShopSubscription> shopSubscriptions;
   final List<PlanDefinition> plans;
+  final bool isPlansLoading;
+  final String? plansError;
   final List<SubscriptionPayment> payments;
   final ReconciliationSummary? reconciliationSummary;
   final PaymentFilter paymentFilter;
@@ -139,6 +143,8 @@ class SubscriptionsState {
     SubscriptionsTab? tab,
     List<ShopSubscription>? shopSubscriptions,
     List<PlanDefinition>? plans,
+    bool? isPlansLoading,
+    String? Function()? plansError,
     List<SubscriptionPayment>? payments,
     ReconciliationSummary? reconciliationSummary,
     PaymentFilter? paymentFilter,
@@ -153,6 +159,8 @@ class SubscriptionsState {
       tab: tab ?? this.tab,
       shopSubscriptions: shopSubscriptions ?? this.shopSubscriptions,
       plans: plans ?? this.plans,
+      isPlansLoading: isPlansLoading ?? this.isPlansLoading,
+      plansError: plansError == null ? this.plansError : plansError(),
       payments: payments ?? this.payments,
       reconciliationSummary:
           reconciliationSummary ?? this.reconciliationSummary,

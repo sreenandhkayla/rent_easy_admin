@@ -30,6 +30,7 @@ class ShopOwnersToolbar extends StatelessWidget {
     OwnerStatusFilter.all => ShopOwnersStrings.allStatuses,
     OwnerStatusFilter.active => ShopOwnersStrings.active,
     OwnerStatusFilter.restricted => ShopOwnersStrings.restricted,
+    OwnerStatusFilter.deleted => ShopOwnersStrings.deleted,
   };
 
   @override

@@ -181,6 +181,16 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
 
+  static const TextStyle priceStrikethrough = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+    color: AppColors.textSecondary,
+    decoration: TextDecoration.lineThrough,
+    decorationColor: AppColors.textSecondary,
+  );
+
   static const TextStyle labelRegular = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,

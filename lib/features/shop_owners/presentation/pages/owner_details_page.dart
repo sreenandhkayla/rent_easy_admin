@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shop_owners_strings.dart';
@@ -12,6 +13,7 @@ import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_breadcrumbs.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_reason_dialog.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_text_link.dart';
@@ -32,41 +34,69 @@ class OwnerDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OwnerDetailsCubit(ownerId)..load(),
+      create: (_) => getIt<OwnerDetailsCubit>(param1: ownerId)..load(),
       child: BlocBuilder<OwnerDetailsCubit, OwnerDetailsState>(
         builder: (context, state) {
           final OwnerDetails? details = state.details;
           final DateTime? updatedAt = state.updatedAt;
-          final String title =
-              details?.owner.name ?? ShopOwnersStrings.ownerNotFound;
-          void backToList() =>
+          final String title = switch (details?.owner.name) {
+            null => ShopOwnersStrings.ownerNotFound,
+            '' => ShopOwnersStrings.unnamedOwner,
+            final String name => name,
+          };
+          void backToList() {
+            final NavigatorState navigator = Navigator.of(context);
+            if (state.hasChanges && navigator.canPop()) {
+              navigator.pop(true);
+            } else {
               returnToSection(context, AdminSection.shopOwners);
-          return AdminShell(
-            section: AdminSection.shopOwners,
-            isSectionRoot: false,
-            title: title,
-            subtitle: ShopOwnersStrings.ownerDetailsSubtitle,
-            breadcrumb: AppBreadcrumbs(
-              items: [
-                AppBreadcrumb(ShopOwnersStrings.title, onTap: backToList),
-                AppBreadcrumb(title),
-              ],
-            ),
-            headerActions: [
-              if (updatedAt != null)
-                AppRefreshButton(
-                  updatedAt: updatedAt,
-                  onPressed: context.read<OwnerDetailsCubit>().load,
-                ),
-            ],
-            child: switch (state.status) {
-              OwnerDetailsStatus.loading => const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              OwnerDetailsStatus.notFound => _NotFound(onBack: backToList),
-              OwnerDetailsStatus.loaded => _OwnerDetailsBody(details: details!),
+            }
+          }
+
+          return PopScope<Object?>(
+            canPop: !state.hasChanges,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) Navigator.of(context).pop(true);
             },
+            child: AdminShell(
+              section: AdminSection.shopOwners,
+              isSectionRoot: false,
+              title: title,
+              subtitle: ShopOwnersStrings.ownerDetailsSubtitle,
+              breadcrumb: AppBreadcrumbs(
+                items: [
+                  AppBreadcrumb(ShopOwnersStrings.title, onTap: backToList),
+                  AppBreadcrumb(title),
+                ],
+              ),
+              headerActions: [
+                if (updatedAt != null)
+                  AppRefreshButton(
+                    updatedAt: updatedAt,
+                    onPressed: context.read<OwnerDetailsCubit>().load,
+                  ),
+              ],
+              child: switch (state.status) {
+                OwnerDetailsStatus.loading => const Padding(
+                  padding: EdgeInsets.all(48),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                OwnerDetailsStatus.failure => AppCard(
+                  child: AppEmptyState(
+                    icon: Icons.error_outline_rounded,
+                    title: ShopOwnersStrings.ownerNotFound,
+                    message: state.errorMessage ?? AppStrings.recordsLoadFailed,
+                    actionLabel: AppStrings.retry,
+                    onAction: context.read<OwnerDetailsCubit>().load,
+                  ),
+                ),
+                OwnerDetailsStatus.notFound => _NotFound(onBack: backToList),
+                OwnerDetailsStatus.loaded => _OwnerDetailsBody(
+                  details: details!,
+                  isSaving: state.isSaving,
+                ),
+              },
+            ),
           );
         },
       ),
@@ -75,15 +105,20 @@ class OwnerDetailsPage extends StatelessWidget {
 }
 
 class _OwnerDetailsBody extends StatelessWidget {
-  const _OwnerDetailsBody({required this.details});
+  const _OwnerDetailsBody({required this.details, required this.isSaving});
 
   static const double _twoColumnBreakpoint = 1000;
 
   final OwnerDetails details;
+  final bool isSaving;
+
+  String get _name => details.owner.name.isEmpty
+      ? ShopOwnersStrings.unnamedOwner
+      : details.owner.name;
 
   Future<void> _restrict(BuildContext context) async {
     final OwnerDetailsCubit cubit = context.read<OwnerDetailsCubit>();
-    final String name = details.owner.name;
+    final String name = _name;
     final String? reason = await AppReasonDialog.show(
       context,
       title: ShopOwnersStrings.restrictTitle(name),
@@ -94,13 +129,14 @@ class _OwnerDetailsBody extends StatelessWidget {
       confirmLabel: ShopOwnersStrings.restrictAccount,
     );
     if (reason == null || !context.mounted) return;
-    cubit.restrict(reason: reason, actor: AdminProfile.current.name);
-    context.showAppMessage(ShopOwnersStrings.restrictedMessage(name));
+    final String? error = await cubit.setRestricted(true);
+    if (!context.mounted) return;
+    context.showAppMessage(error ?? ShopOwnersStrings.restrictedMessage(name));
   }
 
   Future<void> _restore(BuildContext context) async {
     final OwnerDetailsCubit cubit = context.read<OwnerDetailsCubit>();
-    final String name = details.owner.name;
+    final String name = _name;
     final bool confirmed = await AppConfirmDialog.show(
       context,
       title: ShopOwnersStrings.restoreTitle(name),
@@ -109,8 +145,9 @@ class _OwnerDetailsBody extends StatelessWidget {
       cancelLabel: AppStrings.cancel,
     );
     if (!confirmed || !context.mounted) return;
-    cubit.restore(actor: AdminProfile.current.name);
-    context.showAppMessage(ShopOwnersStrings.restoredMessage(name));
+    final String? error = await cubit.setRestricted(false);
+    if (!context.mounted) return;
+    context.showAppMessage(error ?? ShopOwnersStrings.restoredMessage(name));
   }
 
   @override
@@ -133,6 +170,8 @@ class _OwnerDetailsBody extends StatelessWidget {
       children: [
         OwnerAccountActionsCard(
           isRestricted: details.owner.status == OwnerStatus.restricted,
+          isDeleted: details.owner.status == OwnerStatus.deleted,
+          isBusy: isSaving,
           onViewLinkedShops: () => Navigator.of(context)
               .pushNamedAndRemoveUntil(
                 AppRoutes.shopsMatching(details.owner.name),

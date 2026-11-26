@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/enums/subscription_status.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shop_owners_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -130,7 +131,10 @@ class _ShopRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(shop.name, style: AppTextStyles.titleSmall),
+                Text(
+                  shop.name.isEmpty ? ShopOwnersStrings.emptyValue : shop.name,
+                  style: AppTextStyles.titleSmall,
+                ),
                 const SizedBox(height: 2),
                 Text(
                   shop.isBranch
@@ -143,7 +147,12 @@ class _ShopRow extends StatelessWidget {
           ),
           Expanded(
             flex: 14,
-            child: Text(shop.location, style: AppTextStyles.tableCell),
+            child: Text(
+              shop.location.isEmpty
+                  ? ShopOwnersStrings.emptyValue
+                  : shop.location,
+              style: AppTextStyles.tableCell,
+            ),
           ),
           Expanded(
             flex: 14,
@@ -156,7 +165,15 @@ class _ShopRow extends StatelessWidget {
             flex: 17,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: AppSubscriptionPill(status: shop.subscription),
+              child: switch (shop.subscription) {
+                final SubscriptionStatus status => AppSubscriptionPill(
+                  status: status,
+                ),
+                null => const Text(
+                  ShopOwnersStrings.notAvailable,
+                  style: AppTextStyles.tableCell,
+                ),
+              },
             ),
           ),
           Expanded(

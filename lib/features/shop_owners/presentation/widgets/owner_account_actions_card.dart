@@ -13,9 +13,13 @@ class OwnerAccountActionsCard extends StatelessWidget {
     required this.onViewLinkedShops,
     required this.onRestrict,
     required this.onRestore,
+    this.isDeleted = false,
+    this.isBusy = false,
   });
 
   final bool isRestricted;
+  final bool isDeleted;
+  final bool isBusy;
   final VoidCallback onViewLinkedShops;
   final VoidCallback onRestrict;
   final VoidCallback onRestore;
@@ -39,20 +43,26 @@ class OwnerAccountActionsCard extends StatelessWidget {
             onPressed: onViewLinkedShops,
           ),
           const SizedBox(height: 10),
-          isRestricted
-              ? AppSecondaryButton(
-                  label: ShopOwnersStrings.restoreAccount,
-                  icon: Icons.lock_open_outlined,
-                  isExpanded: true,
-                  onPressed: onRestore,
-                )
-              : AppSecondaryButton(
-                  label: ShopOwnersStrings.restrictAccount,
-                  svgIcon: AppImages.restrictIcon,
-                  isDestructive: true,
-                  isExpanded: true,
-                  onPressed: onRestrict,
-                ),
+          if (isDeleted)
+            const Text(
+              ShopOwnersStrings.deletedAccountNote,
+              style: AppTextStyles.bodySmall,
+            )
+          else if (isRestricted)
+            AppSecondaryButton(
+              label: ShopOwnersStrings.restoreAccount,
+              icon: Icons.lock_open_outlined,
+              isExpanded: true,
+              onPressed: isBusy ? null : onRestore,
+            )
+          else
+            AppSecondaryButton(
+              label: ShopOwnersStrings.restrictAccount,
+              svgIcon: AppImages.restrictIcon,
+              isDestructive: true,
+              isExpanded: true,
+              onPressed: isBusy ? null : onRestrict,
+            ),
           const SizedBox(height: 14),
           const Text(
             ShopOwnersStrings.accountActionsNote,
