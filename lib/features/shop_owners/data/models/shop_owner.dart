@@ -30,6 +30,7 @@ class ShopOwner {
   static const String userIdField = 'userId';
   static const String nameField = 'name';
   static const String phoneField = 'phone';
+  static const String collection = 'users';
   static const String createdAtField = 'createdAt';
   static const String shopsField = 'shops';
   static const String subscribedField = 'subscribed';

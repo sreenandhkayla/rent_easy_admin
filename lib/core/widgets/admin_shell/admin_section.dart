@@ -8,6 +8,7 @@ enum AdminSection {
     AppStrings.navDashboard,
     svgIcon: AppImages.dashboardIcon,
     route: AppRoutes.dashboard,
+    permission: AdminPermission.viewDashboard,
     accessSummary: AppStrings.accessDashboard,
   ),
   shopOwners(

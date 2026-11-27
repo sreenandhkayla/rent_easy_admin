@@ -1,33 +1,17 @@
+import '../../../../core/data/admin_record.dart';
+import '../../../../core/enums/admin_role.dart';
+
 class AdminStaffMember {
-  const AdminStaffMember({
-    required this.adminId,
-    required this.name,
-    required this.email,
-    required this.role,
-    required this.isActive,
-    this.lastSignInAt,
-  });
+  const AdminStaffMember(this.record);
 
-  final String adminId;
-  final String name;
-  final String email;
-  final String role;
-  final bool isActive;
-  final DateTime? lastSignInAt;
+  final AdminRecord record;
 
-  AdminStaffMember copyWith({
-    String? name,
-    String? email,
-    String? role,
-    bool? isActive,
-  }) {
-    return AdminStaffMember(
-      adminId: adminId,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      role: role ?? this.role,
-      isActive: isActive ?? this.isActive,
-      lastSignInAt: lastSignInAt,
-    );
-  }
+  String get adminId => record.id;
+  String get name => record.name;
+  String get email => record.email;
+  AdminRole get adminRole => record.role;
+  String get role => record.role.label;
+  bool get isActive => record.isActive;
+  DateTime? get lastSignInAt => record.lastSignInAt;
+  bool get isSuperAdmin => record.role == AdminRole.superAdmin;
 }

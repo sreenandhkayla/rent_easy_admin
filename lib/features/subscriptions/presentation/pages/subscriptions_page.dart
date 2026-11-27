@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../auth/presentation/widgets/admin_permission_context.dart';
+
 import '../../../../core/di/injection.dart';
+import '../../../../core/enums/admin_permission.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/subscriptions_strings.dart';
@@ -50,6 +53,9 @@ class SubscriptionsPage extends StatelessWidget {
         builder: (context, state) {
           final SubscriptionsCubit cubit = context.read<SubscriptionsCubit>();
           final SubscriptionOverview? overview = state.overview;
+          final bool canManagePlans = context.canPerform(
+            AdminPermission.managePlans,
+          );
           return AdminShell(
             section: AdminSection.subscriptions,
             title: SubscriptionsStrings.title,
@@ -97,21 +103,27 @@ class SubscriptionsPage extends StatelessWidget {
                           isLoading: state.isPlansLoading,
                           errorMessage: state.plansError,
                           onRetry: cubit.loadPlans,
-                          onCreatePlan: () async {
-                            final Object? saved = await Navigator.of(context)
-                                .pushNamed(AppRoutes.createPlan);
-                            if (saved == true) cubit.loadPlans();
-                          },
+                          onCreatePlan: !canManagePlans
+                              ? null
+                              : () async {
+                                  final Object? saved = await Navigator.of(
+                                    context,
+                                  ).pushNamed(AppRoutes.createPlan);
+                                  if (saved == true) cubit.loadPlans();
+                                },
                           onViewDetails: (plan) async {
                             final Object? changed = await Navigator.of(context)
                                 .pushNamed(AppRoutes.planDetailsFor(plan.id));
                             if (changed == true) cubit.loadPlans();
                           },
-                          onEdit: (plan) async {
-                            final Object? saved = await Navigator.of(context)
-                                .pushNamed(AppRoutes.editPlanFor(plan.id));
-                            if (saved == true) cubit.loadPlans();
-                          },
+                          onEdit: !canManagePlans
+                              ? null
+                              : (plan) async {
+                                  final Object? saved = await Navigator.of(
+                                    context,
+                                  ).pushNamed(AppRoutes.editPlanFor(plan.id));
+                                  if (saved == true) cubit.loadPlans();
+                                },
                         )
                       else if (state.tab == SubscriptionsTab.payments)
                         SubscriptionPaymentsTab(

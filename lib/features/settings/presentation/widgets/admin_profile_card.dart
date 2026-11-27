@@ -86,15 +86,17 @@ class AdminProfileCard extends StatelessWidget {
               ),
               AppDetailField(
                 label: SettingsStrings.mobileNumber,
-                value: account.mobileNumber,
+                value: account.mobileNumber.isEmpty
+                    ? SettingsStrings.emptyValue
+                    : account.mobileNumber,
               ),
               AppDetailField(label: SettingsStrings.role, value: account.role),
               AppDetailField(
                 label: SettingsStrings.lastSignIn,
-                value: SettingsStrings.signInLine(
-                  AppFormatters.timestamp(account.lastSignInAt),
-                  account.lastSignInPlace,
-                ),
+                value: switch (account.lastSignInAt) {
+                  final DateTime at => AppFormatters.timestamp(at),
+                  null => SettingsStrings.emptyValue,
+                },
               ),
               AppDetailField(
                 label: SettingsStrings.adminId,

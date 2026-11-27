@@ -1,0 +1,11 @@
+{
+  "name": "rent-easy-backfill-shop-restrictions",
+  "private": true,
+  "description": "Sets isRestricted to false on shops that do not have it, so the Active shop status filter finds them.",
+  "scripts": {
+    "backfill": "node backfill_shop_restrictions.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}

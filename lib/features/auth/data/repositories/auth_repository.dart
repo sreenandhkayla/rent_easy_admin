@@ -18,6 +18,14 @@ class AuthRepository {
     return result.mapLeft((_) => const AuthFailure(AppStrings.logoutFailed));
   }
 
+  Future<Either<Failure, Unit>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _dataSource.changePassword(
+    currentPassword: currentPassword,
+    newPassword: newPassword,
+  );
+
   Future<Either<Failure, AdminRecord>> signIn({
     required String email,
     required String password,
@@ -33,7 +41,11 @@ class AuthRepository {
       ),
       Left(:final value) => left<Failure, AdminRecord>(value),
     };
-    if (resolved.isLeft()) await _dataSource.signOut();
+    if (resolved.isLeft()) {
+      await _dataSource.signOut();
+    } else if (resolved case Right(:final value) when value.id.isNotEmpty) {
+      await _adminsDataSource.recordSignIn(value.id);
+    }
     return resolved;
   }
 
@@ -56,10 +68,13 @@ class AuthRepository {
     if (existing case Left(:final value)) {
       return value is DataFailure &&
               value.message == AppStrings.recordsAccessDenied
-          ? left(const AuthFailure(AppStrings.loginFailed))
+          ? left(const AuthFailure(AppStrings.loginAdminRecordDenied))
           : left(value);
     }
     if (existing.getOrElse((_) => null) case final admin?) {
+      if (!admin.isActive) {
+        return left(const AuthFailure(AppStrings.loginAccountDisabled));
+      }
       return admin.homeRoute == null
           ? left(const AuthFailure(AppStrings.loginNoAccess))
           : right(admin);
@@ -68,7 +83,7 @@ class AuthRepository {
     final isAdmin = await _dataSource.isCurrentUserAdmin();
     if (isAdmin case Left(:final value)) return left(value);
     if (!isAdmin.getOrElse((_) => false)) {
-      return left(const AuthFailure(AppStrings.loginFailed));
+      return left(const AuthFailure(AppStrings.loginNoAccess));
     }
     return _claimFirstAdmin(user.email, user.displayName);
   }

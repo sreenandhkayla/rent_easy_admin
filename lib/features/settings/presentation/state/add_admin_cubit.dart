@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/enums/admin_role.dart';
-import '../../data/models/admin_staff_member.dart';
-import '../../data/settings_mock_data.dart';
+import '../../../../core/resources/strings/settings_strings.dart';
+import '../../data/repositories/admin_staff_repository.dart';
 import 'admin_form_state.dart';
 
 class AddAdminCubit extends Cubit<AdminFormState> {
-  AddAdminCubit() : super(AdminFormState(updatedAt: DateTime.now()));
+  AddAdminCubit(this._repository)
+    : super(AdminFormState(updatedAt: DateTime.now()));
+
+  final AdminStaffRepository _repository;
 
   void refresh() => emit(state.copyWith(updatedAt: DateTime.now()));
 
@@ -15,25 +18,43 @@ class AddAdminCubit extends Cubit<AdminFormState> {
   void setEmail(String value) =>
       emit(state.copyWith(email: value, isEmailTaken: false));
 
+  void setPassword(String value) => emit(state.copyWith(password: value));
+
   void setRole(AdminRole value) => emit(state.copyWith(role: value));
 
   void setActive(bool value) => emit(state.copyWith(isActive: value));
 
-  AdminStaffMember? save() {
-    final bool isTaken =
-        state.isEmailValid && SettingsMockData.emailExists(state.email);
-    if (!state.isNameValid || !state.isEmailValid || isTaken) {
-      emit(state.copyWith(showErrors: true, isEmailTaken: isTaken));
-      return null;
+  Future<({AddedAdmin? added, String? error})> save() async {
+    if (state.isSaving) return (added: null, error: null);
+    if (!state.isNameValid || !state.isEmailValid || !state.isPasswordValid) {
+      emit(state.copyWith(showErrors: true));
+      return (added: null, error: null);
     }
-    final AdminStaffMember member = AdminStaffMember(
-      adminId: SettingsMockData.nextAdminId(),
-      name: state.name.trim(),
-      email: state.email.trim().toLowerCase(),
-      role: state.role.label,
+    emit(state.copyWith(isSaving: true));
+    final result = await _repository.addAdmin(
+      name: state.name,
+      email: state.email,
+      password: state.password,
+      role: state.role,
       isActive: state.isActive,
     );
-    SettingsMockData.addStaff(member);
-    return member;
+    if (isClosed) return (added: null, error: null);
+    return result.match(
+      (failure) {
+        final bool isTaken = failure.message == SettingsStrings.emailTaken;
+        emit(
+          state.copyWith(
+            isSaving: false,
+            showErrors: true,
+            isEmailTaken: isTaken,
+          ),
+        );
+        return (added: null, error: isTaken ? null : failure.message);
+      },
+      (added) {
+        emit(state.copyWith(isSaving: false));
+        return (added: added, error: null);
+      },
+    );
   }
 }

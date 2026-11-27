@@ -17,12 +17,12 @@ class PlanCard extends StatelessWidget {
     super.key,
     required this.plan,
     required this.onViewDetails,
-    required this.onEdit,
+    this.onEdit,
   });
 
   final PlanDefinition plan;
   final VoidCallback onViewDetails;
-  final VoidCallback onEdit;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -88,12 +88,14 @@ class PlanCard extends StatelessWidget {
                   onPressed: onViewDetails,
                 ),
               ),
-              const SizedBox(width: 8),
-              AppSecondaryButton(
-                label: SubscriptionsStrings.edit,
-                icon: Icons.edit_outlined,
-                onPressed: onEdit,
-              ),
+              if (onEdit case final VoidCallback edit) ...[
+                const SizedBox(width: 8),
+                AppSecondaryButton(
+                  label: SubscriptionsStrings.edit,
+                  icon: Icons.edit_outlined,
+                  onPressed: edit,
+                ),
+              ],
             ],
           ),
         ],

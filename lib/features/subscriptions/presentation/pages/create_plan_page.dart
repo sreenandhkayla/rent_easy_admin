@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/enums/admin_permission.dart';
+import '../../../auth/presentation/widgets/admin_permission_context.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
@@ -102,46 +105,61 @@ class CreatePlanPage extends StatelessWidget {
                 onPressed: cubit.refresh,
               ),
             ],
-            child: switch (state.formStatus) {
-              PlanFormStatus.loading => const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              PlanFormStatus.notFound => const AppCard(
-                child: AppEmptyState(
-                  icon: Icons.search_off_rounded,
-                  title: SubscriptionsStrings.planNotFound,
-                  message: SubscriptionsStrings.planNotFoundMessage,
-                ),
-              ),
-              PlanFormStatus.failure => AppCard(
-                child: AppEmptyState(
-                  icon: Icons.error_outline_rounded,
-                  title: SubscriptionsStrings.planNotFound,
-                  message: state.errorMessage ?? AppStrings.recordsLoadFailed,
-                  actionLabel: AppStrings.retry,
-                  onAction: cubit.load,
-                ),
-              ),
-              PlanFormStatus.ready => LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth < _twoColumnBreakpoint) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [form, const SizedBox(height: 16), preview],
-                    );
-                  }
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: form),
-                      const SizedBox(width: 16),
-                      Expanded(child: preview),
-                    ],
-                  );
-                },
-              ),
-            },
+            child: !context.canPerform(AdminPermission.managePlans)
+                ? AppCard(
+                    child: AppEmptyState(
+                      icon: Icons.lock_outline_rounded,
+                      title: SubscriptionsStrings.managePlansDeniedTitle,
+                      message: SubscriptionsStrings.managePlansDenied,
+                      actionLabel: SubscriptionsStrings.tabPlans,
+                      onAction: () => _backToPlans(context),
+                    ),
+                  )
+                : switch (state.formStatus) {
+                    PlanFormStatus.loading => const Padding(
+                      padding: EdgeInsets.all(48),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    PlanFormStatus.notFound => const AppCard(
+                      child: AppEmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: SubscriptionsStrings.planNotFound,
+                        message: SubscriptionsStrings.planNotFoundMessage,
+                      ),
+                    ),
+                    PlanFormStatus.failure => AppCard(
+                      child: AppEmptyState(
+                        icon: Icons.error_outline_rounded,
+                        title: SubscriptionsStrings.planNotFound,
+                        message:
+                            state.errorMessage ?? AppStrings.recordsLoadFailed,
+                        actionLabel: AppStrings.retry,
+                        onAction: cubit.load,
+                      ),
+                    ),
+                    PlanFormStatus.ready => LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth < _twoColumnBreakpoint) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              form,
+                              const SizedBox(height: 16),
+                              preview,
+                            ],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: form),
+                            const SizedBox(width: 16),
+                            Expanded(child: preview),
+                          ],
+                        );
+                      },
+                    ),
+                  },
           );
         },
       ),

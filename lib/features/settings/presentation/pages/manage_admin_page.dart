@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/settings_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -13,8 +15,10 @@ import '../../../../core/widgets/app_breadcrumbs.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../../core/widgets/app_detail_field.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_secondary_button.dart';
 import '../../../../core/widgets/app_text_link.dart';
+import '../../../auth/presentation/state/admin_session_cubit.dart';
 import '../../data/models/admin_staff_member.dart';
 import '../state/admin_form_state.dart';
 import '../state/manage_admin_cubit.dart';
@@ -38,7 +42,7 @@ class ManageAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ManageAdminCubit(adminId)..load(),
+      create: (_) => getIt<ManageAdminCubit>(param1: adminId)..load(),
       child: BlocBuilder<ManageAdminCubit, ManageAdminState>(
         builder: (context, state) {
           final AdminStaffMember? member = state.member;
@@ -71,6 +75,15 @@ class ManageAdminPage extends StatelessWidget {
               ManageAdminStatus.notFound => _NotFound(
                 onBack: () => _backToStaff(context),
               ),
+              ManageAdminStatus.failure => AppCard(
+                child: AppEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: SettingsStrings.staffLoadFailed,
+                  message: state.errorMessage ?? AppStrings.recordsLoadFailed,
+                  actionLabel: AppStrings.retry,
+                  onAction: context.read<ManageAdminCubit>().load,
+                ),
+              ),
               ManageAdminStatus.loaded => _ManageBody(
                 state: state,
                 member: member!,
@@ -100,9 +113,17 @@ class _ManageBody extends StatelessWidget {
   final AdminFormState form;
   final ValueChanged<bool> onBack;
 
-  void _save(BuildContext context) {
-    final AdminStaffMember? updated = context.read<ManageAdminCubit>().save();
+  Future<void> _save(BuildContext context) async {
+    final AdminSessionCubit session = context.read<AdminSessionCubit>();
+    final result = await context.read<ManageAdminCubit>().save();
+    if (!context.mounted) return;
+    if (result.error case final String error) {
+      context.showAppMessage(error);
+      return;
+    }
+    final AdminStaffMember? updated = result.saved;
     if (updated == null) return;
+    if (state.isSelf) session.accountUpdated(updated.record);
     context.showAppMessage(SettingsStrings.adminSaved(updated.name));
     onBack(true);
   }
@@ -117,7 +138,13 @@ class _ManageBody extends StatelessWidget {
       cancelLabel: SettingsStrings.cancel,
       isDestructive: true,
     );
-    if (!confirmed || !context.mounted || !cubit.remove()) return;
+    if (!confirmed || !context.mounted) return;
+    final String? error = await cubit.remove();
+    if (!context.mounted) return;
+    if (error != null) {
+      context.showAppMessage(error);
+      return;
+    }
     context.showAppMessage(SettingsStrings.adminRemoved(member.name));
     onBack(true);
   }
@@ -129,7 +156,6 @@ class _ManageBody extends StatelessWidget {
     final Widget formCard = AdminFormCard(
       state: form,
       onNameChanged: cubit.setName,
-      onEmailChanged: cubit.setEmail,
       onRoleChanged: cubit.setRole,
       onActiveChanged: cubit.setActive,
       onCancel: () => onBack(false),
@@ -160,7 +186,7 @@ class _ManageBody extends StatelessWidget {
               isDestructive: true,
               isExpanded: true,
               labelStyle: AppTextStyles.actionLabel,
-              onPressed: () => _remove(context),
+              onPressed: state.isBusy ? null : () => _remove(context),
             ),
             const SizedBox(height: 10),
           ],
@@ -169,6 +195,8 @@ class _ManageBody extends StatelessWidget {
                 ? SettingsStrings.cannotRemoveSelf
                 : state.isLastSuperAdmin
                 ? SettingsStrings.lastSuperAdmin
+                : !state.canChangeSuperAdmin
+                ? SettingsStrings.superAdminOnly
                 : SettingsStrings.removeAdminNote,
             style: AppTextStyles.meta,
           ),

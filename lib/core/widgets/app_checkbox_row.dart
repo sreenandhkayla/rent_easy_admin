@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'app_checkbox.dart';
 
 class AppCheckboxRow extends StatelessWidget {
   const AppCheckboxRow({
@@ -26,23 +26,7 @@ class AppCheckboxRow extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox.square(
-              dimension: 20,
-              child: Checkbox(
-                value: value,
-                onChanged: handler == null
-                    ? null
-                    : (checked) => handler(checked ?? false),
-                activeColor: AppColors.ink,
-                checkColor: AppColors.onInk,
-                side: const BorderSide(color: AppColors.checkboxBorder),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
+            AppCheckbox(value: value, onChanged: onChanged),
             const SizedBox(width: 10),
             Flexible(child: Text(label, style: AppTextStyles.tableCell)),
           ],

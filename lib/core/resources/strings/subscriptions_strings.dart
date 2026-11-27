@@ -4,6 +4,11 @@ import 'app_strings.dart';
 class SubscriptionsStrings {
   SubscriptionsStrings._();
 
+  static const String managePlansDeniedTitle = "You can't manage plans";
+  static const String managePlansDenied =
+      "Your role can view plans but can't create, edit or archive them. Ask "
+      'a Super Admin to change this in Settings > Roles & permissions.';
+
   static const String title = 'Subscriptions';
   static const String subtitle =
       'Plans, shop subscriptions and online subscription payments';

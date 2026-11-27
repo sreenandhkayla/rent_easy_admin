@@ -15,9 +15,13 @@ class ShopActionsCard extends StatelessWidget {
     required this.onViewSubscription,
     required this.onRestrict,
     required this.onRestore,
+    this.isBusy = false,
+    this.canRestrict = true,
   });
 
   final bool isRestricted;
+  final bool isBusy;
+  final bool canRestrict;
   final VoidCallback onViewOwner;
   final VoidCallback onViewSubscription;
   final VoidCallback onRestrict;
@@ -47,24 +51,26 @@ class ShopActionsCard extends StatelessWidget {
             labelStyle: AppTextStyles.actionLabel,
             onPressed: onViewSubscription,
           ),
-          const SizedBox(height: 10),
-          if (isRestricted)
-            AppPrimaryButton(
-              label: ShopsStrings.restoreShop,
-              svgIcon: AppImages.refreshIcon,
-              isCompact: true,
-              labelStyle: AppTextStyles.actionLabel,
-              onPressed: onRestore,
-            )
-          else
-            AppSecondaryButton(
-              label: ShopsStrings.restrictShop,
-              svgIcon: AppImages.restrictIcon,
-              isDestructive: true,
-              isExpanded: true,
-              labelStyle: AppTextStyles.actionLabel,
-              onPressed: onRestrict,
-            ),
+          if (canRestrict) ...[
+            const SizedBox(height: 10),
+            if (isRestricted)
+              AppPrimaryButton(
+                label: ShopsStrings.restoreShop,
+                svgIcon: AppImages.refreshIcon,
+                isCompact: true,
+                labelStyle: AppTextStyles.actionLabel,
+                onPressed: isBusy ? null : onRestore,
+              )
+            else
+              AppSecondaryButton(
+                label: ShopsStrings.restrictShop,
+                svgIcon: AppImages.restrictIcon,
+                isDestructive: true,
+                isExpanded: true,
+                labelStyle: AppTextStyles.actionLabel,
+                onPressed: isBusy ? null : onRestrict,
+              ),
+          ],
           const SizedBox(height: 14),
           const Text(ShopsStrings.shopActionsNote, style: AppTextStyles.meta),
         ],

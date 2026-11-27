@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/dashboard_strings.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_messenger.dart';
 import '../../../../core/widgets/admin_shell/admin_navigation.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
@@ -25,8 +25,14 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => DashboardCubit()..load(),
-      child: BlocBuilder<DashboardCubit, DashboardState>(
+      create: (_) => getIt<DashboardCubit>()..load(),
+      child: BlocConsumer<DashboardCubit, DashboardState>(
+        listenWhen: (previous, current) =>
+            current.countsError != null &&
+            previous.countsError != current.countsError,
+        listener: (context, state) => context.showAppMessage(
+          DashboardStrings.countsLoadFailed(state.countsError!),
+        ),
         builder: (context, state) {
           final DashboardSummary? summary = state.summary;
           void openSection(AdminSection section) => openAdminSection(
@@ -46,7 +52,8 @@ class DashboardPage extends StatelessWidget {
               if (summary != null)
                 AppRefreshButton(
                   updatedAt: summary.updatedAt,
-                  onPressed: context.read<DashboardCubit>().load,
+                  onPressed: () =>
+                      context.read<DashboardCubit>().load(refresh: true),
                 ),
             ],
             child: summary == null

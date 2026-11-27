@@ -1,48 +1,55 @@
 import '../../data/models/admin_account.dart';
 
+enum EditProfileStatus { loading, loaded, failure }
+
 class EditProfileState {
   const EditProfileState({
-    required this.account,
-    required this.name,
-    required this.mobileNumber,
-    required this.updatedAt,
+    this.status = EditProfileStatus.loading,
+    this.account,
+    this.name = '',
+    this.mobileNumber = '',
+    this.updatedAt,
+    this.errorMessage,
     this.showErrors = false,
+    this.isSaving = false,
   });
 
-  static const int minMobileDigits = 10;
-
-  final AdminAccount account;
+  final EditProfileStatus status;
+  final AdminAccount? account;
   final String name;
   final String mobileNumber;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
+  final String? errorMessage;
   final bool showErrors;
+  final bool isSaving;
 
   bool get isNameValid => name.trim().isNotEmpty;
 
-  bool get isMobileValid {
-    final String value = mobileNumber.trim();
-    final int digits = value.replaceAll(RegExp(r'\D'), '').length;
-    return RegExp(r'^\+?[\d\s-]+$').hasMatch(value) &&
-        digits >= minMobileDigits;
-  }
+  bool get isMobileValid => AdminAccount.isValidMobile(mobileNumber);
 
   bool get showNameError => showErrors && !isNameValid;
 
   bool get showMobileError => showErrors && !isMobileValid;
 
   EditProfileState copyWith({
+    EditProfileStatus? status,
     AdminAccount? account,
     String? name,
     String? mobileNumber,
     DateTime? updatedAt,
+    String? Function()? errorMessage,
     bool? showErrors,
+    bool? isSaving,
   }) {
     return EditProfileState(
+      status: status ?? this.status,
       account: account ?? this.account,
       name: name ?? this.name,
       mobileNumber: mobileNumber ?? this.mobileNumber,
       updatedAt: updatedAt ?? this.updatedAt,
+      errorMessage: errorMessage == null ? this.errorMessage : errorMessage(),
       showErrors: showErrors ?? this.showErrors,
+      isSaving: isSaving ?? this.isSaving,
     );
   }
 }

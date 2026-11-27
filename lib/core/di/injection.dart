@@ -3,12 +3,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/dashboard/data/datasources/dashboard_remote_data_source.dart';
+import '../../features/dashboard/data/repositories/dashboard_repository.dart';
+import '../../features/dashboard/presentation/state/dashboard_cubit.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/auth/presentation/state/admin_session_cubit.dart';
 import '../../features/auth/presentation/state/auth_cubit.dart';
+import '../../features/auth/presentation/state/change_password_cubit.dart';
+import '../../features/settings/data/datasources/platform_settings_remote_data_source.dart';
+import '../../features/settings/data/datasources/role_permissions_remote_data_source.dart';
+import '../../features/settings/data/repositories/admin_profile_repository.dart';
+import '../../features/settings/data/repositories/admin_staff_repository.dart';
+import '../../features/settings/data/repositories/platform_settings_repository.dart';
+import '../../features/settings/data/repositories/role_permissions_repository.dart';
+import '../../features/settings/presentation/state/add_admin_cubit.dart';
+import '../../features/settings/presentation/state/edit_profile_cubit.dart';
+import '../../features/settings/presentation/state/manage_admin_cubit.dart';
+import '../../features/settings/presentation/state/platform_branding_cubit.dart';
+import '../../features/settings/presentation/state/settings_cubit.dart';
+import '../../features/settings/presentation/state/settings_state.dart';
 import '../../features/shop_owners/data/datasources/shop_owners_remote_data_source.dart';
 import '../../features/shops/data/datasources/shops_remote_data_source.dart';
 import '../../features/shops/data/repositories/shops_repository.dart';
+import '../../features/shops/presentation/state/shop_details_cubit.dart';
 import '../../features/shops/presentation/state/shops_cubit.dart';
 import '../../features/subscriptions/data/datasources/plans_remote_data_source.dart';
 import '../../features/subscriptions/data/repositories/plans_repository.dart';
@@ -52,10 +69,48 @@ void configureDependencies() {
         getIt<AdminsRemoteDataSource>(),
       ),
     )
+    ..registerLazySingleton<AdminProfileRepository>(
+      () => AdminProfileRepository(
+        getIt<AuthRemoteDataSource>(),
+        getIt<AdminsRemoteDataSource>(),
+      ),
+    )
+    ..registerLazySingleton<DashboardRemoteDataSource>(
+      () => DashboardRemoteDataSource(FirebaseFirestore.instance),
+    )
+    ..registerLazySingleton<DashboardRepository>(
+      () => DashboardRepository(getIt<DashboardRemoteDataSource>()),
+    )
+    ..registerFactory<DashboardCubit>(
+      () => DashboardCubit(getIt<DashboardRepository>()),
+    )
+    ..registerLazySingleton<PlatformSettingsRemoteDataSource>(
+      () => PlatformSettingsRemoteDataSource(FirebaseFirestore.instance),
+    )
+    ..registerLazySingleton<PlatformSettingsRepository>(
+      () =>
+          PlatformSettingsRepository(getIt<PlatformSettingsRemoteDataSource>()),
+    )
+    ..registerLazySingleton<RolePermissionsRemoteDataSource>(
+      () => RolePermissionsRemoteDataSource(FirebaseFirestore.instance),
+    )
+    ..registerLazySingleton<RolePermissionsRepository>(
+      () => RolePermissionsRepository(getIt<RolePermissionsRemoteDataSource>()),
+    )
+    ..registerLazySingleton<AdminStaffRepository>(
+      () => AdminStaffRepository(
+        getIt<AdminsRemoteDataSource>(),
+        getIt<AuthRemoteDataSource>(),
+        getIt<RolePermissionsRepository>(),
+      ),
+    )
     ..registerFactory<ShopOwnersRepository>(
       () => ShopOwnersRepository(getIt<ShopOwnersRemoteDataSource>()),
     )
     ..registerFactory<AuthCubit>(() => AuthCubit(getIt<AuthRepository>()))
+    ..registerFactory<ChangePasswordCubit>(
+      () => ChangePasswordCubit(getIt<AuthRepository>()),
+    )
     ..registerFactory<AdminSessionCubit>(
       () => AdminSessionCubit(getIt<AuthRepository>()),
     )
@@ -71,6 +126,30 @@ void configureDependencies() {
     ..registerFactoryParam<ShopsCubit, String, void>(
       (initialQuery, _) =>
           ShopsCubit(getIt<ShopsRepository>(), initialQuery: initialQuery),
+    )
+    ..registerFactoryParam<ShopDetailsCubit, String?, void>(
+      (shopId, _) => ShopDetailsCubit(getIt<ShopsRepository>(), shopId),
+    )
+    ..registerFactoryParam<SettingsCubit, SettingsTab, void>(
+      (tab, _) => SettingsCubit(
+        getIt<AdminProfileRepository>(),
+        getIt<AdminStaffRepository>(),
+        getIt<RolePermissionsRepository>(),
+        getIt<PlatformSettingsRepository>(),
+        initialTab: tab,
+      ),
+    )
+    ..registerFactory<PlatformBrandingCubit>(
+      () => PlatformBrandingCubit(getIt<PlatformSettingsRepository>()),
+    )
+    ..registerFactory<AddAdminCubit>(
+      () => AddAdminCubit(getIt<AdminStaffRepository>()),
+    )
+    ..registerFactoryParam<ManageAdminCubit, String?, void>(
+      (adminId, _) => ManageAdminCubit(getIt<AdminStaffRepository>(), adminId),
+    )
+    ..registerFactory<EditProfileCubit>(
+      () => EditProfileCubit(getIt<AdminProfileRepository>()),
     )
     ..registerFactoryParam<SubscriptionsCubit, SubscriptionsTab, void>(
       (tab, _) => SubscriptionsCubit(getIt<PlansRepository>(), initialTab: tab),

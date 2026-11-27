@@ -9,13 +9,15 @@ class PlanActionsCard extends StatelessWidget {
   const PlanActionsCard({
     super.key,
     required this.isArchived,
-    required this.onEdit,
-    required this.onArchive,
+    this.onEdit,
+    this.onArchive,
   });
 
   final bool isArchived;
-  final VoidCallback onEdit;
-  final VoidCallback onArchive;
+  final VoidCallback? onEdit;
+  final VoidCallback? onArchive;
+
+  bool get _canManage => onEdit != null || onArchive != null;
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +31,15 @@ class PlanActionsCard extends StatelessWidget {
             style: AppTextStyles.cardTitle,
           ),
           const SizedBox(height: 14),
-          AppSecondaryButton(
-            label: SubscriptionsStrings.editPlan,
-            icon: Icons.edit_outlined,
-            isExpanded: true,
-            labelStyle: AppTextStyles.actionLabel,
-            onPressed: onEdit,
-          ),
-          if (!isArchived) ...[
+          if (onEdit case final VoidCallback edit)
+            AppSecondaryButton(
+              label: SubscriptionsStrings.editPlan,
+              icon: Icons.edit_outlined,
+              isExpanded: true,
+              labelStyle: AppTextStyles.actionLabel,
+              onPressed: edit,
+            ),
+          if (onArchive case final VoidCallback archive when !isArchived) ...[
             const SizedBox(height: 10),
             AppSecondaryButton(
               label: SubscriptionsStrings.archivePlan,
@@ -44,12 +47,14 @@ class PlanActionsCard extends StatelessWidget {
               isDestructive: true,
               isExpanded: true,
               labelStyle: AppTextStyles.actionLabel,
-              onPressed: onArchive,
+              onPressed: archive,
             ),
           ],
-          const SizedBox(height: 12),
+          if (_canManage) const SizedBox(height: 12),
           Text(
-            isArchived
+            !_canManage
+                ? SubscriptionsStrings.managePlansDenied
+                : isArchived
                 ? SubscriptionsStrings.archivedPlanNote
                 : SubscriptionsStrings.archivePlanNote,
             style: AppTextStyles.meta,

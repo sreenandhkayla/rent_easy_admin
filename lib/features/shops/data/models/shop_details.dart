@@ -28,4 +28,20 @@ class ShopDetails {
   final Shop shop;
   final List<Shop> relatedBranches;
   final List<ShopActivity> activities;
+
+  static List<Shop> relatedTo(Shop shop, List<Shop> ownerShops) {
+    final String rootId = shop.parentShopId ?? shop.shopId;
+    return [
+      for (final Shop other in ownerShops)
+        if (other.shopId != shop.shopId &&
+            (other.shopId == rootId || other.parentShopId == rootId))
+          other,
+    ];
+  }
+
+  ShopDetails copyWith({Shop? shop}) => ShopDetails(
+    shop: shop ?? this.shop,
+    relatedBranches: relatedBranches,
+    activities: activities,
+  );
 }

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../access/role_permissions.dart';
+import '../enums/admin_permission.dart';
 import '../enums/admin_role.dart';
 import '../widgets/admin_shell/admin_section.dart';
 
@@ -11,22 +13,27 @@ class AdminRecord {
     required this.role,
     required this.phone,
     this.modules = const [],
+    this.actions = const {},
+    this.isActive = true,
     this.createdAt,
+    this.lastSignInAt,
   });
 
   factory AdminRecord.fromDocument(Map<String, dynamic> data, String id) {
     final permissions = data[permissionsField];
     final createdAt = data[createdAtField];
+    final lastSignInAt = data[lastSignInAtField];
 
     final email = normalizeEmail(
       _text(data[emailField]) ?? (id.contains('@') ? id : ''),
     );
+    final role = roleFromKey(data[roleField]);
 
     return AdminRecord(
       id: id,
       name: _text(data[nameField]) ?? email,
       email: email,
-      role: roleFromKey(data[roleField]),
+      role: role,
       phone: _text(data[phoneField]) ?? '',
       modules: permissions is List
           ? [
@@ -34,10 +41,22 @@ class AdminRecord {
                 if (permissions.contains(section.name)) section,
             ]
           : const [],
+      actions: data[permissionsVersionField] == currentPermissionsVersion
+          ? {
+              for (final permission in AdminPermission.values)
+                if (!RolePermissions.isPagePermission(permission) &&
+                    permissions is List &&
+                    permissions.contains(permission.name))
+                  permission,
+            }
+          : RolePermissions.defaults().actionsFor(role),
+      isActive: data[isActiveField] != false,
       createdAt: createdAt is Timestamp ? createdAt.toDate() : null,
+      lastSignInAt: lastSignInAt is Timestamp ? lastSignInAt.toDate() : null,
     );
   }
 
+  static const String collection = 'admin';
   static const String nameField = 'name';
   static const String emailField = 'email';
   static const String phoneField = 'phoneNumber';
@@ -45,7 +64,11 @@ class AdminRecord {
   static const String permissionsField = 'permissions';
   static const String createdAtField = 'createdAt';
   static const String updatedAtField = 'updatedAt';
-  static const int minPasswordLength = 6;
+  static const String isActiveField = 'isActive';
+  static const String lastSignInAtField = 'lastSignInAt';
+  static const String permissionsVersionField = 'permissionsVersion';
+  static const int currentPermissionsVersion = 2;
+  static const int minPasswordLength = 10;
   static const int phoneLength = 10;
 
   final String id;
@@ -54,7 +77,16 @@ class AdminRecord {
   final AdminRole role;
   final String phone;
   final List<AdminSection> modules;
+  final Set<AdminPermission> actions;
+  final bool isActive;
   final DateTime? createdAt;
+  final DateTime? lastSignInAt;
+
+  static List<AdminSection> modulesFor(AdminRole role) =>
+      RolePermissions.defaults().sectionsFor(role);
+
+  static List<String> permissionsFor(AdminRole role) =>
+      RolePermissions.defaults().moduleNamesFor(role);
 
   static AdminRole roleFromKey(Object? key) =>
       AdminRole.values.asNameMap()[key] ?? AdminRole.supportAdmin;
@@ -96,6 +128,16 @@ class AdminRecord {
 
   bool canAccess(AdminSection section) => accessibleSections.contains(section);
 
+  bool can(AdminPermission permission) {
+    if (hasAllModules) return true;
+    if (RolePermissions.isPagePermission(permission)) {
+      return accessibleSections.any(
+        (section) => section.permission == permission,
+      );
+    }
+    return actions.contains(permission);
+  }
+
   String? get homeRoute {
     for (final section in accessibleSections) {
       if (section.route case final route?) return route;
@@ -108,7 +150,14 @@ class AdminRecord {
     emailField: normalizeEmail(email),
     phoneField: phone.trim(),
     roleField: role.name,
-    permissionsField: [for (final section in accessibleSections) section.name],
+    permissionsField: [
+      for (final section in accessibleSections) section.name,
+      for (final permission in AdminPermission.values)
+        if (!RolePermissions.isPagePermission(permission) && can(permission))
+          permission.name,
+    ],
+    permissionsVersionField: currentPermissionsVersion,
+    isActiveField: isActive,
   };
 
   AdminRecord copyWith({
@@ -118,7 +167,10 @@ class AdminRecord {
     AdminRole? role,
     String? phone,
     List<AdminSection>? modules,
+    Set<AdminPermission>? actions,
+    bool? isActive,
     DateTime? createdAt,
+    DateTime? lastSignInAt,
   }) {
     return AdminRecord(
       id: id ?? this.id,
@@ -127,7 +179,10 @@ class AdminRecord {
       role: role ?? this.role,
       phone: phone ?? this.phone,
       modules: modules ?? this.modules,
+      actions: actions ?? this.actions,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
+      lastSignInAt: lastSignInAt ?? this.lastSignInAt,
     );
   }
 }

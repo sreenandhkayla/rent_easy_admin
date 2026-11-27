@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/settings_strings.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_list_skeleton.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../data/models/admin_staff_member.dart';
@@ -15,6 +19,10 @@ class AdminStaffTab extends StatefulWidget {
     required this.onSearch,
     required this.onAddAdmin,
     required this.onManage,
+    required this.onRetry,
+    this.isLoading = false,
+    this.isSearching = false,
+    this.errorMessage,
   });
 
   final List<AdminStaffMember> staff;
@@ -22,6 +30,10 @@ class AdminStaffTab extends StatefulWidget {
   final ValueChanged<String> onSearch;
   final VoidCallback onAddAdmin;
   final ValueChanged<AdminStaffMember> onManage;
+  final VoidCallback onRetry;
+  final bool isLoading;
+  final bool isSearching;
+  final String? errorMessage;
 
   @override
   State<AdminStaffTab> createState() => _AdminStaffTabState();
@@ -70,7 +82,24 @@ class _AdminStaffTabState extends State<AdminStaffTab> {
           ),
         ),
         const SizedBox(height: 16),
-        AdminStaffTable(rows: widget.staff, onManage: widget.onManage),
+        if (widget.isLoading)
+          const AppListSkeleton()
+        else if (widget.errorMessage case final String message)
+          AppCard(
+            child: AppEmptyState(
+              icon: Icons.error_outline_rounded,
+              title: SettingsStrings.staffLoadFailed,
+              message: message,
+              actionLabel: AppStrings.retry,
+              onAction: widget.onRetry,
+            ),
+          )
+        else
+          AdminStaffTable(
+            rows: widget.staff,
+            isLoading: widget.isSearching,
+            onManage: widget.onManage,
+          ),
       ],
     );
   }

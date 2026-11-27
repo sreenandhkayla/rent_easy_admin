@@ -6,16 +6,17 @@ import '../resources/strings/app_strings.dart';
 import '../resources/strings/settings_strings.dart';
 import 'admin_record.dart';
 import 'firestore_failures.dart';
+import 'prefix_search.dart';
 
 class AdminsRemoteDataSource {
   const AdminsRemoteDataSource(this._firestore);
 
-  static const String _collection = 'admin';
+  static const int _searchLimit = 50;
 
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> get _admins =>
-      _firestore.collection(_collection);
+      _firestore.collection(AdminRecord.collection);
 
   Query<Map<String, dynamic>> _byEmail(String email) => _admins
       .where(
@@ -32,6 +33,67 @@ class AdminsRemoteDataSource {
             ? null
             : AdminRecord.fromDocument(document.data(), document.id);
       });
+
+  Future<Either<Failure, List<AdminRecord>>> searchByPrefix(
+    String field,
+    List<String> prefixes, {
+    int limit = _searchLimit,
+  }) => _read(() async {
+    final snapshot = await _admins
+        .where(PrefixSearch.startsWithAny(field, prefixes))
+        .limit(limit)
+        .get();
+    return [
+      for (final document in snapshot.docs)
+        AdminRecord.fromDocument(document.data(), document.id),
+    ];
+  });
+
+  Future<Either<Failure, AdminRecord?>> fetchById(String id) => _read(() async {
+    final document = await _admins.doc(id).get();
+    final Map<String, dynamic>? data = document.data();
+    if (!document.exists || data == null) return null;
+    return AdminRecord.fromDocument(data, document.id);
+  });
+
+  Future<Either<Failure, Unit>> updateProfile(
+    String id, {
+    String? name,
+    String? phone,
+  }) => _write(
+    () => _admins.doc(id).update({
+      AdminRecord.nameField: ?name,
+      AdminRecord.phoneField: ?phone,
+      AdminRecord.updatedAtField: FieldValue.serverTimestamp(),
+    }),
+  );
+
+  Future<Either<Failure, List<AdminRecord>>> fetchAll() => _read(() async {
+    final snapshot = await _admins.get();
+    return [
+      for (final document in snapshot.docs)
+        AdminRecord.fromDocument(document.data(), document.id),
+    ]..sort(AdminRecord.oldestFirst);
+  });
+
+  Future<Either<Failure, Unit>> updateAdmin(
+    String id,
+    Map<String, Object?> fields,
+  ) => _write(
+    () => _admins.doc(id).update({
+      ...fields,
+      AdminRecord.updatedAtField: FieldValue.serverTimestamp(),
+    }),
+  );
+
+  Future<Either<Failure, Unit>> deleteAdmin(String id) =>
+      _write(() => _admins.doc(id).delete());
+
+  Future<Either<Failure, Unit>> recordSignIn(String id) => _write(
+    () => _admins.doc(id).update({
+      AdminRecord.lastSignInAtField: FieldValue.serverTimestamp(),
+    }),
+  );
 
   Future<Either<Failure, bool>> hasAnyAdmin() => _read(() async {
     final snapshot = await _admins.limit(1).get();

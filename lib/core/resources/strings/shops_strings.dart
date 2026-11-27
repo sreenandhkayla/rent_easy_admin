@@ -69,6 +69,9 @@ class ShopsStrings {
       'Items, customers and rental transactions stay in the Owner App and are '
       'not listed here.';
   static const String administrativeActivity = 'Administrative activity';
+  static const String activityRegistered = 'Shop registered via Owner App';
+  static const String activityExpired = 'Subscription expired';
+  static const String activitySystem = 'System';
 
   static const String expiredTitlePrefix = 'Subscription expired on';
   static const String expiredMessage =

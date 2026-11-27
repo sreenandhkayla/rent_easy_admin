@@ -17,6 +17,7 @@ class AppTextField extends StatefulWidget {
     this.inputFormatters,
     this.maxLength,
     this.obscureText = false,
+    this.readOnly = false,
     this.keyboardType,
     this.textInputAction,
     this.autofillHints,
@@ -36,6 +37,7 @@ class AppTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
   final bool obscureText;
+  final bool readOnly;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
@@ -56,13 +58,24 @@ class _AppTextFieldState extends State<AppTextField> {
       ? TextEditingController(text: widget.initialValue)
       : null;
 
+  final FocusNode _focusNode = FocusNode();
+
   @override
   void dispose() {
     _ownController?.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _toggleObscured() => setState(() => _isObscured = !_isObscured);
+  void _toggleObscured() {
+    final bool hadFocus = _focusNode.hasFocus;
+    if (hadFocus) _focusNode.unfocus();
+    setState(() => _isObscured = !_isObscured);
+    if (!hadFocus) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +91,15 @@ class _AppTextFieldState extends State<AppTextField> {
         const SizedBox(height: 10),
         TextField(
           controller: widget.controller ?? _ownController,
+          focusNode: _focusNode,
           obscureText: _isObscured,
           obscuringCharacter: '•',
+          readOnly: widget.readOnly,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
-          autofillHints: widget.autofillHints,
+          autofillHints: widget.obscureText && !_isObscured
+              ? null
+              : widget.autofillHints,
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
           inputFormatters: widget.inputFormatters,

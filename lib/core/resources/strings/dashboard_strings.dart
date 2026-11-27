@@ -4,6 +4,10 @@ class DashboardStrings {
   DashboardStrings._();
 
   static const String title = 'Dashboard';
+  static const String emptyValue = '—';
+
+  static String countsLoadFailed(String reason) =>
+      "Couldn't load shop and owner totals. $reason";
   static const String subtitle = 'Platform overview';
 
   static const String totalShops = 'Total Shops';

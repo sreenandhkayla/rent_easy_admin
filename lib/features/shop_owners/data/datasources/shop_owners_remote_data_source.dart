@@ -20,13 +20,12 @@ typedef OwnerDocument = ({
 class ShopOwnersRemoteDataSource {
   const ShopOwnersRemoteDataSource(this._firestore);
 
-  static const String _collection = 'users';
   static const int _ownerIdLimit = 10;
 
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> get _users =>
-      _firestore.collection(_collection);
+      _firestore.collection(ShopOwner.collection);
 
   List<Filter> _statusFilters(OwnerStatusFilter status) => switch (status) {
     OwnerStatusFilter.all => const [],

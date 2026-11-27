@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_brand_logo.dart';
+import '../../../settings/presentation/state/platform_branding_cubit.dart';
 
 class LoginBrandPanel extends StatelessWidget {
   const LoginBrandPanel({super.key});
@@ -18,7 +20,10 @@ class LoginBrandPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppBrandLogo(onDark: true),
+              AppBrandLogo(
+                onDark: true,
+                name: context.watch<PlatformBrandingCubit>().state,
+              ),
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,

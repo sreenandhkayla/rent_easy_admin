@@ -1,0 +1,11 @@
+{
+  "name": "rent-easy-set-admin-password",
+  "private": true,
+  "description": "Sets a new password for an existing admin sign-in with the Firebase Admin SDK, without sending an email.",
+  "scripts": {
+    "set-password": "node set_admin_password.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}

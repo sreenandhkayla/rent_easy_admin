@@ -5,9 +5,7 @@ class DashboardMockData {
 
   static DashboardSummary summary(DateTime updatedAt) {
     return DashboardSummary(
-      totalShops: 1532,
       subscribedShops: 987,
-      totalShopOwners: 1248,
       totalItems: 42860,
       totalRentals: 18450,
       totalCustomers: 24320,

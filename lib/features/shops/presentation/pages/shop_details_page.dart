@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
+import '../../../../core/enums/admin_permission.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shops_strings.dart';
@@ -12,9 +14,11 @@ import '../../../../core/widgets/admin_shell/admin_shell.dart';
 import '../../../../core/widgets/app_breadcrumbs.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_reason_dialog.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_text_link.dart';
+import '../../../auth/presentation/widgets/admin_permission_context.dart';
 import '../../data/models/shop.dart';
 import '../../data/models/shop_details.dart';
 import '../state/shop_details_cubit.dart';
@@ -34,40 +38,65 @@ class ShopDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ShopDetailsCubit(shopId)..load(),
+      create: (_) => getIt<ShopDetailsCubit>(param1: shopId)..load(),
       child: BlocBuilder<ShopDetailsCubit, ShopDetailsState>(
         builder: (context, state) {
           final ShopDetails? details = state.details;
           final DateTime? updatedAt = state.updatedAt;
           final String title = details?.shop.name ?? ShopsStrings.shopNotFound;
-          void backToList() =>
+          void backToList() {
+            final NavigatorState navigator = Navigator.of(context);
+            if (state.hasChanges && navigator.canPop()) {
+              navigator.pop(true);
+            } else {
               returnToSection(context, AdminSection.shopsAndBranches);
-          return AdminShell(
-            section: AdminSection.shopsAndBranches,
-            isSectionRoot: false,
-            title: title,
-            subtitle: ShopsStrings.shopDetailsSubtitle,
-            breadcrumb: AppBreadcrumbs(
-              items: [
-                AppBreadcrumb(ShopsStrings.title, onTap: backToList),
-                AppBreadcrumb(title),
-              ],
-            ),
-            headerActions: [
-              if (updatedAt != null)
-                AppRefreshButton(
-                  updatedAt: updatedAt,
-                  onPressed: context.read<ShopDetailsCubit>().load,
-                ),
-            ],
-            child: switch (state.status) {
-              ShopDetailsStatus.loading => const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              ShopDetailsStatus.notFound => _NotFound(onBack: backToList),
-              ShopDetailsStatus.loaded => _ShopDetailsBody(details: details!),
+            }
+          }
+
+          return PopScope<Object?>(
+            canPop: !state.hasChanges,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) Navigator.of(context).pop(true);
             },
+            child: AdminShell(
+              section: AdminSection.shopsAndBranches,
+              isSectionRoot: false,
+              title: title,
+              subtitle: ShopsStrings.shopDetailsSubtitle,
+              breadcrumb: AppBreadcrumbs(
+                items: [
+                  AppBreadcrumb(ShopsStrings.title, onTap: backToList),
+                  AppBreadcrumb(title),
+                ],
+              ),
+              headerActions: [
+                if (updatedAt != null)
+                  AppRefreshButton(
+                    updatedAt: updatedAt,
+                    onPressed: context.read<ShopDetailsCubit>().load,
+                  ),
+              ],
+              child: switch (state.status) {
+                ShopDetailsStatus.loading => const Padding(
+                  padding: EdgeInsets.all(48),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                ShopDetailsStatus.failure => AppCard(
+                  child: AppEmptyState(
+                    icon: Icons.error_outline_rounded,
+                    title: ShopsStrings.shopNotFound,
+                    message: state.errorMessage ?? AppStrings.recordsLoadFailed,
+                    actionLabel: AppStrings.retry,
+                    onAction: context.read<ShopDetailsCubit>().load,
+                  ),
+                ),
+                ShopDetailsStatus.notFound => _NotFound(onBack: backToList),
+                ShopDetailsStatus.loaded => _ShopDetailsBody(
+                  details: details!,
+                  isSaving: state.isSaving,
+                ),
+              },
+            ),
           );
         },
       ),
@@ -76,11 +105,12 @@ class ShopDetailsPage extends StatelessWidget {
 }
 
 class _ShopDetailsBody extends StatelessWidget {
-  const _ShopDetailsBody({required this.details});
+  const _ShopDetailsBody({required this.details, required this.isSaving});
 
   static const double _twoColumnBreakpoint = 1000;
 
   final ShopDetails details;
+  final bool isSaving;
 
   Future<void> _viewSubscription(BuildContext context) async {
     final ShopDetailsCubit cubit = context.read<ShopDetailsCubit>();
@@ -108,8 +138,9 @@ class _ShopDetailsBody extends StatelessWidget {
       confirmLabel: ShopsStrings.restrictShop,
     );
     if (reason == null || !context.mounted) return;
-    cubit.restrict(reason: reason, actor: AdminProfile.current.name);
-    context.showAppMessage(ShopsStrings.restrictedSnack(name));
+    final String? error = await cubit.setRestricted(true);
+    if (!context.mounted) return;
+    context.showAppMessage(error ?? ShopsStrings.restrictedSnack(name));
   }
 
   Future<void> _restore(BuildContext context) async {
@@ -123,8 +154,9 @@ class _ShopDetailsBody extends StatelessWidget {
       cancelLabel: AppStrings.cancel,
     );
     if (!confirmed || !context.mounted) return;
-    cubit.restore(actor: AdminProfile.current.name);
-    context.showAppMessage(ShopsStrings.restoredSnack(name));
+    final String? error = await cubit.setRestricted(false);
+    if (!context.mounted) return;
+    context.showAppMessage(error ?? ShopsStrings.restoredSnack(name));
   }
 
   @override
@@ -153,6 +185,10 @@ class _ShopDetailsBody extends StatelessWidget {
       children: [
         ShopActionsCard(
           isRestricted: shop.status == ShopStatus.restricted,
+          isBusy: isSaving,
+          canRestrict: context.canPerform(
+            AdminPermission.restrictOwnersAndShops,
+          ),
           onViewOwner: () => _viewOwner(context),
           onViewSubscription: () => _viewSubscription(context),
           onRestrict: () => _restrict(context),

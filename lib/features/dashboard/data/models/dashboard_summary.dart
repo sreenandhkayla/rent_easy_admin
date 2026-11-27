@@ -23,9 +23,7 @@ class ActivityEntry {
 
 class DashboardSummary {
   const DashboardSummary({
-    required this.totalShops,
     required this.subscribedShops,
-    required this.totalShopOwners,
     required this.totalItems,
     required this.totalRentals,
     required this.totalCustomers,
@@ -40,11 +38,13 @@ class DashboardSummary {
     required this.failedPaymentsPendingVerification,
     required this.activities,
     required this.updatedAt,
+    this.totalShops,
+    this.totalShopOwners,
   });
 
-  final int totalShops;
+  final int? totalShops;
   final int subscribedShops;
-  final int totalShopOwners;
+  final int? totalShopOwners;
   final int totalItems;
   final int totalRentals;
   final int totalCustomers;
@@ -59,6 +59,30 @@ class DashboardSummary {
   final int failedPaymentsPendingVerification;
   final List<ActivityEntry> activities;
   final DateTime updatedAt;
+
+  DashboardSummary withCounts({
+    required int totalShops,
+    required int totalShopOwners,
+    required DateTime updatedAt,
+  }) => DashboardSummary(
+    totalShops: totalShops,
+    subscribedShops: subscribedShops,
+    totalShopOwners: totalShopOwners,
+    totalItems: totalItems,
+    totalRentals: totalRentals,
+    totalCustomers: totalCustomers,
+    activeSubscriptions: activeSubscriptions,
+    unsubscribedShops: unsubscribedShops,
+    expiringSoon: expiringSoon,
+    expiredSubscriptions: expiredSubscriptions,
+    reportsPending: reportsPending,
+    reportsUnderReview: reportsUnderReview,
+    restrictedShops: restrictedShops,
+    failedPaymentsThisMonth: failedPaymentsThisMonth,
+    failedPaymentsPendingVerification: failedPaymentsPendingVerification,
+    activities: activities,
+    updatedAt: updatedAt,
+  );
 
   int get pendingWorkOpen =>
       reportsPending +

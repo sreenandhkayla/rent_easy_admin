@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/enums/admin_permission.dart';
+import '../../../auth/presentation/widgets/admin_permission_context.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
@@ -139,15 +142,18 @@ class _DetailsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget main = PlanOverviewCard(plan: plan);
+    final bool canManagePlans = context.canPerform(AdminPermission.managePlans);
     final Widget side = PlanActionsCard(
       isArchived: plan.isArchived,
-      onEdit: () async {
-        final PlanDetailsCubit cubit = context.read<PlanDetailsCubit>();
-        final Object? saved = await Navigator.of(context)
-            .pushNamed(AppRoutes.editPlanFor(plan.id));
-        if (saved == true) cubit.reloadAfterEdit();
-      },
-      onArchive: () => _archive(context),
+      onEdit: !canManagePlans
+          ? null
+          : () async {
+              final PlanDetailsCubit cubit = context.read<PlanDetailsCubit>();
+              final Object? saved = await Navigator.of(context)
+                  .pushNamed(AppRoutes.editPlanFor(plan.id));
+              if (saved == true) cubit.reloadAfterEdit();
+            },
+      onArchive: !canManagePlans ? null : () => _archive(context),
     );
     return LayoutBuilder(
       builder: (context, constraints) {

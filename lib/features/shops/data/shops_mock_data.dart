@@ -2,7 +2,6 @@ import '../../../core/enums/payment_status.dart';
 import '../../../core/enums/subscription_plan.dart';
 import '../../../core/enums/subscription_status.dart';
 import 'models/shop.dart';
-import 'models/shop_details.dart';
 
 class ShopsMockData {
   ShopsMockData._();
@@ -10,43 +9,7 @@ class ShopsMockData {
   static const int totalOnPlatform = 1532;
 
   static final List<Shop> _shops = _seedShops();
-  static final Map<String, List<ShopActivity>> _activities = {};
-
   static List<Shop> shops() => List.of(_shops);
-
-  static ShopDetails? details(String shopId) {
-    final int index = _shops.indexWhere((shop) => shop.shopId == shopId);
-    if (index < 0) return null;
-    final Shop shop = _shops[index];
-    final String family = shop.branchOf ?? shop.name;
-    return ShopDetails(
-      shop: shop,
-      relatedBranches: _shops
-          .where(
-            (other) =>
-                other.shopId != shop.shopId &&
-                other.ownerId == shop.ownerId &&
-                (other.name == family || other.branchOf == family),
-          )
-          .toList(),
-      activities: List.of(
-        _activities.putIfAbsent(shopId, () => _seedActivities(shop)),
-      ),
-    );
-  }
-
-  static void updateStatus(
-    String shopId,
-    ShopStatus status,
-    ShopActivity activity,
-  ) {
-    final int index = _shops.indexWhere((shop) => shop.shopId == shopId);
-    if (index < 0) return;
-    _shops[index] = _shops[index].copyWith(status: status);
-    _activities
-        .putIfAbsent(shopId, () => _seedActivities(_shops[index]))
-        .insert(0, activity);
-  }
 
   static Shop? shop(String shopId) {
     final int index = _shops.indexWhere((shop) => shop.shopId == shopId);
@@ -68,43 +31,6 @@ class ShopsMockData {
       expiresAt: expiresAt,
       lastPayment: PaymentStatus.paid,
     );
-  }
-
-  static List<ShopActivity> _seedActivities(Shop shop) {
-    final ShopActivity registered = ShopActivity(
-      title: 'Shop registered via Owner App',
-      actor: 'System',
-      at: shop.registeredAt ?? DateTime(2025),
-      hasTime: false,
-    );
-    final DateTime? expiresAt = shop.expiresAt;
-    return [
-      if (shop.shopId == 'SHP-2009')
-        ShopActivity(
-          title: 'Restricted shop',
-          actor: 'Meera Suresh',
-          at: DateTime(2026, 11, 17, 12, 8),
-          reason: 'Repeated safety complaints under review',
-          isHighlighted: true,
-        )
-      else if (shop.status == ShopStatus.restricted)
-        ShopActivity(
-          title: 'Restricted shop',
-          actor: 'Meera Suresh',
-          at: (shop.registeredAt ?? DateTime(2025)).add(
-            const Duration(days: 45, hours: 10),
-          ),
-          reason: 'Pending document verification',
-          isHighlighted: true,
-        ),
-      if (shop.subscription == SubscriptionStatus.expired && expiresAt != null)
-        ShopActivity(
-          title: 'Subscription expired',
-          actor: 'System',
-          at: DateTime(expiresAt.year, expiresAt.month, expiresAt.day, 9, 1),
-        ),
-      registered,
-    ];
   }
 
   static List<Shop> _seedShops() => [

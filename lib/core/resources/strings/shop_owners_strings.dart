@@ -47,7 +47,6 @@ class ShopOwnersStrings {
   static const String subscription = 'Subscription';
   static const String expiry = 'Expiry';
   static const String branch = 'Branch';
-  static const String shopDetails = 'Shop details';
   static const String emptyValue = '—';
 
   static const String accountActions = 'Account actions';

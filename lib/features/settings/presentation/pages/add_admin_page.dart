@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/settings_strings.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -11,6 +12,7 @@ import '../../../../core/widgets/app_breadcrumbs.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../data/models/admin_staff_member.dart';
+import '../../data/repositories/admin_staff_repository.dart';
 import '../state/add_admin_cubit.dart';
 import '../state/admin_form_state.dart';
 import '../widgets/admin_form_card.dart';
@@ -29,11 +31,20 @@ class AddAdminPage extends StatelessWidget {
     }
   }
 
-  void _save(BuildContext context) {
-    final AdminStaffMember? member = context.read<AddAdminCubit>().save();
-    if (member == null) return;
+  Future<void> _save(BuildContext context) async {
+    final result = await context.read<AddAdminCubit>().save();
+    if (!context.mounted) return;
+    if (result.error case final String error) {
+      context.showAppMessage(error);
+      return;
+    }
+    final AddedAdmin? added = result.added;
+    if (added == null) return;
+    final AdminStaffMember member = added.member;
     context.showAppMessage(
-      SettingsStrings.adminAdded(member.name, member.role),
+      added.isNewLogin
+          ? SettingsStrings.adminCreated(member.name, member.role)
+          : SettingsStrings.adminAddedExistingLogin(member.name, member.role),
     );
     _backToStaff(context, saved: true);
   }
@@ -41,7 +52,7 @@ class AddAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AddAdminCubit(),
+      create: (_) => getIt<AddAdminCubit>(),
       child: BlocBuilder<AddAdminCubit, AdminFormState>(
         builder: (context, state) {
           final AddAdminCubit cubit = context.read<AddAdminCubit>();
@@ -49,6 +60,7 @@ class AddAdminPage extends StatelessWidget {
             state: state,
             onNameChanged: cubit.setName,
             onEmailChanged: cubit.setEmail,
+            onPasswordChanged: cubit.setPassword,
             onRoleChanged: cubit.setRole,
             onActiveChanged: cubit.setActive,
             onCancel: () => _backToStaff(context),

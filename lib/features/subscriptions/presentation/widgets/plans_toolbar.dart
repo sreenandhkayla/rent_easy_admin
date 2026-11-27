@@ -5,9 +5,9 @@ import '../../../../core/widgets/app_notice_banner.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 
 class PlansToolbar extends StatelessWidget {
-  const PlansToolbar({super.key, required this.onCreatePlan});
+  const PlansToolbar({super.key, this.onCreatePlan});
 
-  final VoidCallback onCreatePlan;
+  final VoidCallback? onCreatePlan;
 
   static const double _stackBreakpoint = 640;
 
@@ -18,6 +18,8 @@ class PlansToolbar extends StatelessWidget {
       icon: Icons.warning_amber_rounded,
       message: SubscriptionsStrings.plansNotice,
     );
+    final VoidCallback? onCreatePlan = this.onCreatePlan;
+    if (onCreatePlan == null) return notice;
     final Widget createButton = AppPrimaryButton(
       label: SubscriptionsStrings.createPlan,
       icon: Icons.add,

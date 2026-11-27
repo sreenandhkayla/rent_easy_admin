@@ -57,11 +57,23 @@ class ShopProfileCard extends StatelessWidget {
             maxColumns: 2,
             spacing: 18,
             children: [
-              AppDetailField(label: ShopsStrings.owner, value: shop.ownerName),
-              AppDetailField(label: ShopsStrings.contact, value: shop.contact),
+              AppDetailField(
+                label: ShopsStrings.owner,
+                value: shop.ownerName.isEmpty
+                    ? ShopsStrings.unnamedOwner
+                    : shop.ownerName,
+              ),
+              AppDetailField(
+                label: ShopsStrings.contact,
+                value: shop.contact.isEmpty
+                    ? ShopsStrings.emptyValue
+                    : shop.contact,
+              ),
               AppDetailField(
                 label: ShopsStrings.shopAddress,
-                value: shop.address,
+                value: shop.address.isEmpty
+                    ? ShopsStrings.emptyValue
+                    : shop.address,
               ),
               AppDetailField(
                 label: ShopsStrings.registrationDate,

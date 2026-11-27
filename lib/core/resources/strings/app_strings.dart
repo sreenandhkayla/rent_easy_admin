@@ -4,6 +4,9 @@ class AppStrings {
   AppStrings._();
 
   static const String appName = 'ToolRent';
+  static const String consoleTitle = 'RentEasy Admin';
+
+  static String consoleTitleFor(String platformName) => '$platformName Admin';
   static const String adminConsole = 'Admin Console';
 
   static const String loginHeroTitle =
@@ -32,6 +35,10 @@ class AppStrings {
   static const String loginNoAccess =
       'This account has not been given access to the admin panel. Ask a '
       'Super Admin to add you in Settings > Admin staff.';
+  static const String loginAdminRecordDenied =
+      'Your email and password are correct, but this account is not allowed '
+      'to read its admin record. Ask a Super Admin to check the Firestore '
+      'rules for the admin collection.';
   static const String loginAccountDisabled =
       'This account has been disabled. Contact your administrator.';
   static const String loginTooManyAttempts =

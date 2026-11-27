@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/resources/strings/dashboard_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/app_formatters.dart';
@@ -20,7 +21,7 @@ class DashboardMetricCard extends StatelessWidget {
   });
 
   final String label;
-  final int value;
+  final int? value;
   final String caption;
   final IconData? icon;
   final String? svgIcon;
@@ -46,10 +47,10 @@ class DashboardMetricCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            AppFormatters.number(value),
-            style: AppTextStyles.statValueLarge,
-          ),
+          Text(switch (value) {
+            final int count => AppFormatters.number(count),
+            null => DashboardStrings.emptyValue,
+          }, style: AppTextStyles.statValueLarge),
           const Spacer(),
           const SizedBox(height: 12),
           Row(

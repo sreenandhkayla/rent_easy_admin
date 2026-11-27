@@ -19,12 +19,15 @@ class AdminStaffTable extends StatelessWidget {
     super.key,
     required this.rows,
     required this.onManage,
+    this.isLoading = false,
   });
 
   static const double _minTableWidth = 900;
+  static const double _progressHeight = 2;
 
   final List<AdminStaffMember> rows;
   final ValueChanged<AdminStaffMember> onManage;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +42,15 @@ class AdminStaffTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _HeaderRow(),
-                if (rows.isEmpty)
+                SizedBox(
+                  height: _progressHeight,
+                  child: isLoading
+                      ? const LinearProgressIndicator(
+                          minHeight: _progressHeight,
+                        )
+                      : null,
+                ),
+                if (rows.isEmpty && !isLoading)
                   const AppEmptyState(
                     icon: Icons.search,
                     title: SettingsStrings.noStaffTitle,

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/resources/strings/settings_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+// import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_brand_logo.dart';
 import '../../../../core/widgets/app_card.dart';
-import '../../../../core/widgets/app_dropdown.dart';
+// import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
 import '../../../../core/widgets/app_primary_button.dart';
-import '../../../../core/widgets/app_status_pill.dart';
+// import '../../../../core/widgets/app_status_pill.dart';
 import '../../../../core/widgets/app_text_field.dart';
-import '../../../../core/widgets/app_toggle_row.dart';
+// import '../../../../core/widgets/app_toggle_row.dart';
 import '../../data/models/platform_settings.dart';
 import '../state/settings_state.dart';
 
@@ -26,15 +26,17 @@ class PlatformSettingsTab extends StatelessWidget {
     required this.errors,
     required this.onEdit,
     required this.onSave,
+    this.isSaving = false,
   });
 
-  static const double _twoColumnBreakpoint = 1000;
+  // static const double _twoColumnBreakpoint = 1000;
 
   final PlatformSettings settings;
   final AppVersionInfo versions;
   final PlatformErrors errors;
   final PlatformEdit onEdit;
   final VoidCallback onSave;
+  final bool isSaving;
 
   @override
   Widget build(BuildContext context) {
@@ -43,37 +45,39 @@ class PlatformSettingsTab extends StatelessWidget {
       children: [
         _GeneralCard(settings: settings, errors: errors, onEdit: onEdit),
         const SizedBox(height: 16),
-        _ConfigurationCard(settings: settings, onEdit: onEdit),
-        const SizedBox(height: 16),
+        // _ConfigurationCard(settings: settings, onEdit: onEdit),
+        // const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerRight,
           child: AppPrimaryButton(
             label: SettingsStrings.saveSettings,
             isCompact: true,
+            isLoading: isSaving,
             onPressed: onSave,
           ),
         ),
       ],
     );
-    final Widget side = _VersionCard(versions: versions);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < _twoColumnBreakpoint) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [main, const SizedBox(height: 16), side],
-          );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 7, child: main),
-            const SizedBox(width: 16),
-            Expanded(flex: 4, child: side),
-          ],
-        );
-      },
-    );
+    //     final Widget side = _VersionCard(versions: versions);
+    //     return LayoutBuilder(
+    //       builder: (context, constraints) {
+    //         if (constraints.maxWidth < _twoColumnBreakpoint) {
+    //           return Column(
+    //             crossAxisAlignment: CrossAxisAlignment.stretch,
+    //             children: [main, const SizedBox(height: 16), side],
+    //           );
+    //         }
+    //         return Row(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             Expanded(flex: 7, child: main),
+    //             const SizedBox(width: 16),
+    //             Expanded(flex: 4, child: side),
+    //           ],
+    //         );
+    //       },
+    //     );
+    return main;
   }
 }
 
@@ -133,20 +137,12 @@ class _GeneralCardState extends State<_GeneralCard> {
   late final TextEditingController _phone = TextEditingController(
     text: widget.settings.supportPhone,
   );
-  late final TextEditingController _terms = TextEditingController(
-    text: widget.settings.termsUrl,
-  );
-  late final TextEditingController _privacy = TextEditingController(
-    text: widget.settings.privacyUrl,
-  );
 
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _phone.dispose();
-    _terms.dispose();
-    _privacy.dispose();
     super.dispose();
   }
 
@@ -202,166 +198,146 @@ class _GeneralCardState extends State<_GeneralCard> {
               controller: _phone,
               keyboardType: TextInputType.phone,
               errorText: errors.supportPhone,
-              textInputAction: TextInputAction.next,
               onChanged: (value) =>
                   onEdit((s) => s.copyWith(supportPhone: value)),
             ),
           ),
-          const SizedBox(height: 16),
-          _FieldPair(
-            first: AppTextField(
-              label: SettingsStrings.termsUrl,
-              controller: _terms,
-              keyboardType: TextInputType.url,
-              errorText: errors.termsUrl,
-              textInputAction: TextInputAction.next,
-              onChanged: (value) => onEdit((s) => s.copyWith(termsUrl: value)),
-            ),
-            second: AppTextField(
-              label: SettingsStrings.privacyUrl,
-              controller: _privacy,
-              keyboardType: TextInputType.url,
-              errorText: errors.privacyUrl,
-              onChanged: (value) =>
-                  onEdit((s) => s.copyWith(privacyUrl: value)),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _ConfigurationCard extends StatelessWidget {
-  const _ConfigurationCard({required this.settings, required this.onEdit});
-
-  final PlatformSettings settings;
-  final PlatformEdit onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            SettingsStrings.subscriptionConfig,
-            style: AppTextStyles.cardTitle,
-          ),
-          const SizedBox(height: 16),
-          _FieldPair(
-            first: AppLabeledField(
-              label: SettingsStrings.expiringWindow,
-              child: AppDropdown<int>(
-                value: settings.expiringWindowDays,
-                items: PlatformSettings.expiringWindowOptions,
-                labelOf: SettingsStrings.daysBeforeExpiry,
-                onChanged: (days) =>
-                    onEdit((s) => s.copyWith(expiringWindowDays: days)),
-                isExpanded: true,
-              ),
-            ),
-            second: AppLabeledField(
-              label: SettingsStrings.sessionTimeout,
-              child: AppDropdown<int>(
-                value: settings.sessionTimeoutMinutes,
-                items: PlatformSettings.sessionTimeoutOptions,
-                labelOf: SettingsStrings.minutes,
-                onChanged: (minutes) =>
-                    onEdit((s) => s.copyWith(sessionTimeoutMinutes: minutes)),
-                isExpanded: true,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          AppToggleRow(
-            title: SettingsStrings.expiryReminders,
-            subtitle: SettingsStrings.expiryRemindersNote,
-            value: settings.sendExpiryReminders,
-            onChanged: (value) =>
-                onEdit((s) => s.copyWith(sendExpiryReminders: value)),
-          ),
-          const SizedBox(height: 14),
-          AppToggleRow(
-            title: SettingsStrings.onePerOwner,
-            subtitle: SettingsStrings.onePerOwnerNote,
-            value: settings.oneNotificationPerOwner,
-            onChanged: (value) =>
-                onEdit((s) => s.copyWith(oneNotificationPerOwner: value)),
-          ),
-          const SizedBox(height: 14),
-          AppToggleRow(
-            title: SettingsStrings.requireTwoStep,
-            subtitle: SettingsStrings.requireTwoStepNote,
-            value: settings.requireTwoStep,
-            onChanged: (value) =>
-                onEdit((s) => s.copyWith(requireTwoStep: value)),
-          ),
-          const SizedBox(height: 14),
-          const AppToggleRow(
-            title: SettingsStrings.returnsAfterExpiry,
-            subtitle: SettingsStrings.returnsAfterExpiryNote,
-            value: false,
-            onChanged: null,
-            trailing: AppStatusPill(
-              label: SettingsStrings.needsApproval,
-              color: AppColors.pillAmberText,
-              backgroundColor: AppColors.pillAmberBackground,
-              showDot: false,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _VersionCard extends StatelessWidget {
-  const _VersionCard({required this.versions});
-
-  final AppVersionInfo versions;
-
-  @override
-  Widget build(BuildContext context) {
-    final List<(String, String)> rows = [
-      (SettingsStrings.ownerAndroid, versions.ownerAndroid),
-      (SettingsStrings.ownerIos, versions.ownerIos),
-      (SettingsStrings.minimumSupported, versions.minimumSupported),
-      (SettingsStrings.adminWeb, versions.adminWeb),
-    ];
-    return AppCard(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            SettingsStrings.appVersionInfo,
-            style: AppTextStyles.cardTitle,
-          ),
-          const SizedBox(height: 10),
-          for (final (String label, String value) in rows)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(child: Text(label, style: AppTextStyles.bodySmall)),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      value,
-                      style: AppTextStyles.titleSmall,
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 8),
-          const Text(SettingsStrings.sampleVersions, style: AppTextStyles.meta),
-        ],
-      ),
-    );
-  }
-}
+// class _ConfigurationCard extends StatelessWidget {
+//   const _ConfigurationCard({required this.settings, required this.onEdit});
+//
+//   final PlatformSettings settings;
+//   final PlatformEdit onEdit;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return AppCard(
+//       padding: const EdgeInsets.all(20),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.stretch,
+//         children: [
+//           const Text(
+//             SettingsStrings.subscriptionConfig,
+//             style: AppTextStyles.cardTitle,
+//           ),
+//           const SizedBox(height: 16),
+//           _FieldPair(
+//             first: AppLabeledField(
+//               label: SettingsStrings.expiringWindow,
+//               child: AppDropdown<int>(
+//                 value: settings.expiringWindowDays,
+//                 items: PlatformSettings.expiringWindowOptions,
+//                 labelOf: SettingsStrings.daysBeforeExpiry,
+//                 onChanged: (days) =>
+//                     onEdit((s) => s.copyWith(expiringWindowDays: days)),
+//                 isExpanded: true,
+//               ),
+//             ),
+//             second: AppLabeledField(
+//               label: SettingsStrings.sessionTimeout,
+//               child: AppDropdown<int>(
+//                 value: settings.sessionTimeoutMinutes,
+//                 items: PlatformSettings.sessionTimeoutOptions,
+//                 labelOf: SettingsStrings.minutes,
+//                 onChanged: (minutes) =>
+//                     onEdit((s) => s.copyWith(sessionTimeoutMinutes: minutes)),
+//                 isExpanded: true,
+//               ),
+//             ),
+//           ),
+//           const SizedBox(height: 18),
+//           AppToggleRow(
+//             title: SettingsStrings.expiryReminders,
+//             subtitle: SettingsStrings.expiryRemindersNote,
+//             value: settings.sendExpiryReminders,
+//             onChanged: (value) =>
+//                 onEdit((s) => s.copyWith(sendExpiryReminders: value)),
+//           ),
+//           const SizedBox(height: 14),
+//           AppToggleRow(
+//             title: SettingsStrings.onePerOwner,
+//             subtitle: SettingsStrings.onePerOwnerNote,
+//             value: settings.oneNotificationPerOwner,
+//             onChanged: (value) =>
+//                 onEdit((s) => s.copyWith(oneNotificationPerOwner: value)),
+//           ),
+//           const SizedBox(height: 14),
+//           AppToggleRow(
+//             title: SettingsStrings.requireTwoStep,
+//             subtitle: SettingsStrings.requireTwoStepNote,
+//             value: settings.requireTwoStep,
+//             onChanged: (value) =>
+//                 onEdit((s) => s.copyWith(requireTwoStep: value)),
+//           ),
+//           const SizedBox(height: 14),
+//           const AppToggleRow(
+//             title: SettingsStrings.returnsAfterExpiry,
+//             subtitle: SettingsStrings.returnsAfterExpiryNote,
+//             value: false,
+//             onChanged: null,
+//             trailing: AppStatusPill(
+//               label: SettingsStrings.needsApproval,
+//               color: AppColors.pillAmberText,
+//               backgroundColor: AppColors.pillAmberBackground,
+//               showDot: false,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+//
+// class _VersionCard extends StatelessWidget {
+//   const _VersionCard({required this.versions});
+//
+//   final AppVersionInfo versions;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final List<(String, String)> rows = [
+//       (SettingsStrings.ownerAndroid, versions.ownerAndroid),
+//       (SettingsStrings.ownerIos, versions.ownerIos),
+//       (SettingsStrings.minimumSupported, versions.minimumSupported),
+//       (SettingsStrings.adminWeb, versions.adminWeb),
+//     ];
+//     return AppCard(
+//       padding: const EdgeInsets.all(20),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.stretch,
+//         children: [
+//           const Text(
+//             SettingsStrings.appVersionInfo,
+//             style: AppTextStyles.cardTitle,
+//           ),
+//           const SizedBox(height: 10),
+//           for (final (String label, String value) in rows)
+//             Padding(
+//               padding: const EdgeInsets.symmetric(vertical: 5),
+//               child: Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Flexible(child: Text(label, style: AppTextStyles.bodySmall)),
+//                   const SizedBox(width: 12),
+//                   Flexible(
+//                     child: Text(
+//                       value,
+//                       style: AppTextStyles.titleSmall,
+//                       textAlign: TextAlign.end,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           const SizedBox(height: 8),
+//           const Text(SettingsStrings.sampleVersions, style: AppTextStyles.meta),
+//         ],
+//       ),
+//     );
+//   }
+// }

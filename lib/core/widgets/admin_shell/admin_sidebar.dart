@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../resources/images/app_images.dart';
 import '../../resources/strings/app_strings.dart';
+import '../../resources/strings/settings_strings.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
@@ -21,7 +22,9 @@ class AdminSidebar extends StatelessWidget {
     required this.onToggleCollapsed,
     required this.onSelect,
     required this.onLogout,
+    required this.onChangePassword,
     required this.profileName,
+    this.brandName,
     required this.profileRole,
   });
 
@@ -32,7 +35,9 @@ class AdminSidebar extends StatelessWidget {
   final VoidCallback onToggleCollapsed;
   final ValueChanged<AdminSection> onSelect;
   final VoidCallback onLogout;
+  final VoidCallback onChangePassword;
   final String profileName;
+  final String? brandName;
   final String profileRole;
 
   @override
@@ -61,7 +66,11 @@ class AdminSidebar extends StatelessWidget {
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
                 children: [
-                  _SidebarHeader(compact: compact, onToggle: onToggleCollapsed),
+                  _SidebarHeader(
+                    compact: compact,
+                    onToggle: onToggleCollapsed,
+                    brandName: brandName,
+                  ),
                   const SizedBox(height: 28),
                   if (!compact)
                     const Padding(
@@ -99,6 +108,13 @@ class AdminSidebar extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   AppSidebarItem(
+                    icon: Icons.lock_reset,
+                    label: SettingsStrings.changePassword,
+                    isCollapsed: compact,
+                    onTap: onChangePassword,
+                  ),
+                  const SizedBox(height: 4),
+                  AppSidebarItem(
                     icon: Icons.logout,
                     label: AppStrings.logOut,
                     isCollapsed: compact,
@@ -115,10 +131,15 @@ class AdminSidebar extends StatelessWidget {
 }
 
 class _SidebarHeader extends StatelessWidget {
-  const _SidebarHeader({required this.compact, required this.onToggle});
+  const _SidebarHeader({
+    required this.compact,
+    required this.onToggle,
+    this.brandName,
+  });
 
   final bool compact;
   final VoidCallback onToggle;
+  final String? brandName;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +176,7 @@ class _SidebarHeader extends StatelessWidget {
     }
     return Row(
       children: [
-        const Expanded(child: AppBrandLogo(size: 36)),
+        Expanded(child: AppBrandLogo(size: 36, name: brandName)),
         toggle,
       ],
     );

@@ -1,39 +1,34 @@
+import '../../../../core/data/admin_record.dart';
+
 class AdminAccount {
   const AdminAccount({
-    required this.adminId,
-    required this.name,
-    required this.role,
-    required this.email,
-    required this.mobileNumber,
-    required this.lastSignInAt,
-    required this.lastSignInPlace,
-    required this.isTwoStepEnabled,
+    required this.record,
+    this.lastSignInAt,
+    this.isTwoStepEnabled = false,
   });
 
-  final String adminId;
-  final String name;
-  final String role;
-  final String email;
-  final String mobileNumber;
-  final DateTime lastSignInAt;
-  final String lastSignInPlace;
+  final AdminRecord record;
+  final DateTime? lastSignInAt;
   final bool isTwoStepEnabled;
 
-  AdminAccount copyWith({
-    String? name,
-    String? email,
-    String? role,
-    String? mobileNumber,
-  }) {
-    return AdminAccount(
-      adminId: adminId,
-      name: name ?? this.name,
-      role: role ?? this.role,
-      email: email ?? this.email,
-      mobileNumber: mobileNumber ?? this.mobileNumber,
-      lastSignInAt: lastSignInAt,
-      lastSignInPlace: lastSignInPlace,
-      isTwoStepEnabled: isTwoStepEnabled,
-    );
+  String get adminId => record.id;
+  String get name => record.name;
+  String get role => record.role.label;
+  String get email => record.email;
+  String get mobileNumber => record.phone;
+
+  static bool isValidMobile(String value) {
+    final String trimmed = value.trim();
+    if (!RegExp(r'^\+?[\d\s-]+$').hasMatch(trimmed)) return false;
+    final String digits = trimmed.replaceAll(RegExp(r'\D'), '');
+    return digits.length == AdminRecord.phoneLength ||
+        (digits.length == AdminRecord.phoneLength + 2 &&
+            digits.startsWith('91'));
   }
+
+  AdminAccount copyWith({AdminRecord? record}) => AdminAccount(
+    record: record ?? this.record,
+    lastSignInAt: lastSignInAt,
+    isTwoStepEnabled: isTwoStepEnabled,
+  );
 }

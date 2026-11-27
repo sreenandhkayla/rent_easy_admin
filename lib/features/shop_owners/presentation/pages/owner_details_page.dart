@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/enums/admin_permission.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/shop_owners_strings.dart';
@@ -17,6 +18,7 @@ import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_reason_dialog.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_text_link.dart';
+import '../../../auth/presentation/widgets/admin_permission_context.dart';
 import '../../data/models/owner_details.dart';
 import '../../data/models/shop_owner.dart';
 import '../state/owner_details_cubit.dart';
@@ -159,9 +161,9 @@ class _OwnerDetailsBody extends StatelessWidget {
         const SizedBox(height: 16),
         LinkedShopsCard(
           shops: details.shops,
-          onView: (_) => context.showAppMessage(
-            AppStrings.sectionNotBuilt(ShopOwnersStrings.shopDetails),
-          ),
+          onView: (shop) =>
+              Navigator.of(context)
+                  .pushNamed(AppRoutes.shopDetailsFor(shop.shopId)),
         ),
       ],
     );
@@ -172,6 +174,9 @@ class _OwnerDetailsBody extends StatelessWidget {
           isRestricted: details.owner.status == OwnerStatus.restricted,
           isDeleted: details.owner.status == OwnerStatus.deleted,
           isBusy: isSaving,
+          canRestrict: context.canPerform(
+            AdminPermission.restrictOwnersAndShops,
+          ),
           onViewLinkedShops: () => Navigator.of(context)
               .pushNamedAndRemoveUntil(
                 AppRoutes.shopsMatching(details.owner.name),

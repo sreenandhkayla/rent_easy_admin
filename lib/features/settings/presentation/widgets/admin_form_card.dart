@@ -17,7 +17,8 @@ class AdminFormCard extends StatefulWidget {
     super.key,
     required this.state,
     required this.onNameChanged,
-    required this.onEmailChanged,
+    this.onEmailChanged,
+    this.onPasswordChanged,
     required this.onRoleChanged,
     required this.onActiveChanged,
     required this.onCancel,
@@ -28,7 +29,8 @@ class AdminFormCard extends StatefulWidget {
 
   final AdminFormState state;
   final ValueChanged<String> onNameChanged;
-  final ValueChanged<String> onEmailChanged;
+  final ValueChanged<String>? onEmailChanged;
+  final ValueChanged<String>? onPasswordChanged;
   final ValueChanged<AdminRole> onRoleChanged;
   final ValueChanged<bool> onActiveChanged;
   final VoidCallback onCancel;
@@ -50,10 +52,15 @@ class _AdminFormCardState extends State<AdminFormCard> {
     text: widget.state.email,
   );
 
+  late final TextEditingController _password = TextEditingController(
+    text: widget.state.password,
+  );
+
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -73,7 +80,6 @@ class _AdminFormCardState extends State<AdminFormCard> {
       label: SettingsStrings.fullNameLabel,
       hintText: SettingsStrings.fullNameHint,
       textInputAction: TextInputAction.next,
-      autofillHints: const [AutofillHints.name],
       errorText: state.showNameError ? SettingsStrings.nameRequired : null,
       onChanged: widget.onNameChanged,
     );
@@ -83,7 +89,10 @@ class _AdminFormCardState extends State<AdminFormCard> {
       hintText: SettingsStrings.workEmailHint,
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
-      autofillHints: const [AutofillHints.email],
+      readOnly: widget.onEmailChanged == null,
+      helperText: widget.onEmailChanged == null
+          ? SettingsStrings.emailLocked
+          : null,
       errorText: _emailError,
       onChanged: widget.onEmailChanged,
     );
@@ -110,6 +119,21 @@ class _AdminFormCardState extends State<AdminFormCard> {
               );
             },
           ),
+          if (widget.onPasswordChanged case final onPasswordChanged?) ...[
+            const SizedBox(height: 20),
+            AppTextField(
+              controller: _password,
+              label: SettingsStrings.passwordLabel,
+              hintText: SettingsStrings.passwordHint,
+              obscureText: true,
+              textInputAction: TextInputAction.next,
+              helperText: SettingsStrings.passwordHelper,
+              errorText: state.showPasswordError
+                  ? SettingsStrings.passwordTooShort
+                  : null,
+              onChanged: onPasswordChanged,
+            ),
+          ],
           const SizedBox(height: 22),
           const Text(SettingsStrings.roleLabel, style: AppTextStyles.label),
           const SizedBox(height: 12),
@@ -141,11 +165,12 @@ class _AdminFormCardState extends State<AdminFormCard> {
             children: [
               AppSecondaryButton(
                 label: SettingsStrings.cancel,
-                onPressed: widget.onCancel,
+                onPressed: state.isSaving ? null : widget.onCancel,
               ),
               AppPrimaryButton(
                 label: widget.saveLabel,
                 isCompact: true,
+                isLoading: state.isSaving,
                 onPressed: widget.onSave,
               ),
             ],

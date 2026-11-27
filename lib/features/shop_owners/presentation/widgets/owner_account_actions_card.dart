@@ -15,11 +15,13 @@ class OwnerAccountActionsCard extends StatelessWidget {
     required this.onRestore,
     this.isDeleted = false,
     this.isBusy = false,
+    this.canRestrict = true,
   });
 
   final bool isRestricted;
   final bool isDeleted;
   final bool isBusy;
+  final bool canRestrict;
   final VoidCallback onViewLinkedShops;
   final VoidCallback onRestrict;
   final VoidCallback onRestore;
@@ -42,12 +44,14 @@ class OwnerAccountActionsCard extends StatelessWidget {
             isExpanded: true,
             onPressed: onViewLinkedShops,
           ),
-          const SizedBox(height: 10),
+          if (isDeleted || canRestrict) const SizedBox(height: 10),
           if (isDeleted)
             const Text(
               ShopOwnersStrings.deletedAccountNote,
               style: AppTextStyles.bodySmall,
             )
+          else if (!canRestrict)
+            const SizedBox.shrink()
           else if (isRestricted)
             AppSecondaryButton(
               label: ShopOwnersStrings.restoreAccount,

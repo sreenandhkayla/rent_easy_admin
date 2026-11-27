@@ -18,18 +18,18 @@ class PlansTab extends StatelessWidget {
     required this.isLoading,
     required this.errorMessage,
     required this.onRetry,
-    required this.onCreatePlan,
     required this.onViewDetails,
-    required this.onEdit,
+    this.onCreatePlan,
+    this.onEdit,
   });
 
   final List<PlanDefinition> plans;
   final bool isLoading;
   final String? errorMessage;
   final VoidCallback onRetry;
-  final VoidCallback onCreatePlan;
+  final VoidCallback? onCreatePlan;
   final ValueChanged<PlanDefinition> onViewDetails;
-  final ValueChanged<PlanDefinition> onEdit;
+  final ValueChanged<PlanDefinition>? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,10 @@ class PlansTab extends StatelessWidget {
                 PlanCard(
                   plan: plan,
                   onViewDetails: () => onViewDetails(plan),
-                  onEdit: () => onEdit(plan),
+                  onEdit: switch (onEdit) {
+                    final ValueChanged<PlanDefinition> edit => () => edit(plan),
+                    null => null,
+                  },
                 ),
             ],
           ),

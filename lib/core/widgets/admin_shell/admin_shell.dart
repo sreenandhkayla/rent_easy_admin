@@ -5,15 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../features/auth/presentation/state/admin_session_cubit.dart';
 import '../../../features/auth/presentation/state/auth_cubit.dart';
 import '../../../features/auth/presentation/state/auth_state.dart';
+import '../../../features/auth/presentation/widgets/change_password_dialog.dart';
+import '../../../features/settings/presentation/state/platform_branding_cubit.dart';
 import '../../access/role_preview_cubit.dart';
 import '../../data/admin_record.dart';
 import '../../di/injection.dart';
 import '../../utils/app_messenger.dart';
-import '../../enums/admin_permission.dart';
-import '../../enums/admin_role.dart';
 
 import '../../navigation/app_routes.dart';
 import '../../resources/strings/app_strings.dart';
+import '../../resources/strings/settings_strings.dart';
 import '../../theme/app_colors.dart';
 import '../app_confirm_dialog.dart';
 import '../app_permission_denied.dart';
@@ -76,6 +77,13 @@ class _AdminShellState extends State<AdminShell> {
     await auth.signOut();
   }
 
+  Future<void> _changePassword(BuildContext context) async {
+    final bool changed = await ChangePasswordDialog.show(context);
+    if (changed && context.mounted) {
+      context.showAppMessage(SettingsStrings.passwordUpdated);
+    }
+  }
+
   void _onAuthChanged(BuildContext context, AuthState state) {
     if (state.status == AuthStatus.signedOut) {
       context.read<AdminSessionCubit>().signedOut();
@@ -86,37 +94,39 @@ class _AdminShellState extends State<AdminShell> {
     }
   }
 
-  Widget _content(AdminRole? previewRole) {
-    final AdminPermission? permission = widget.section.permission;
-    if (previewRole == null ||
-        permission == null ||
-        permission.isGranted(previewRole)) {
+  Widget _content(RolePreview? rolePreview) {
+    if (rolePreview == null || rolePreview.canOpen(widget.section)) {
       return widget.child;
     }
     final RolePreviewCubit preview = context.read<RolePreviewCubit>();
     return AppPermissionDenied(
-      roleLabel: previewRole.label,
+      roleLabel: rolePreview.role.label,
       accessSummary: widget.section.accessSummary,
-      onBackToDashboard: () =>
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(AppRoutes.dashboard, (_) => false),
+      onBackToDashboard: () => Navigator.of(context).pushNamedAndRemoveUntil(
+        rolePreview.sections
+                .map((section) => section.route)
+                .whereType<String>()
+                .firstOrNull ??
+            AppRoutes.dashboard,
+        (_) => false,
+      ),
       onExitPreview: preview.exit,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final AdminRole? previewRole = context.watch<RolePreviewCubit>().state;
+    final RolePreview? rolePreview = context.watch<RolePreviewCubit>().state;
     return BlocProvider<AuthCubit>(
       create: (_) => getIt<AuthCubit>(),
       child: BlocListener<AuthCubit, AuthState>(
         listener: _onAuthChanged,
-        child: _buildScaffold(previewRole),
+        child: _buildScaffold(rolePreview),
       ),
     );
   }
 
-  Widget _buildScaffold(AdminRole? previewRole) {
+  Widget _buildScaffold(RolePreview? rolePreview) {
     final AdminRecord? account = context
         .select<AdminSessionCubit, AdminRecord?>(
           (session) => session.state.account,
@@ -143,9 +153,11 @@ class _AdminShellState extends State<AdminShell> {
                       setState(() => _isCollapsedByUser = !isCollapsed),
                   onSelect: _select,
                   onLogout: () => _confirmLogout(context),
+                  onChangePassword: () => _changePassword(context),
                   profileName: profileName,
+                  brandName: context.watch<PlatformBrandingCubit>().state,
                   profileRole:
-                      previewRole?.label ??
+                      rolePreview?.role.label ??
                       account?.role.label ??
                       AdminProfile.current.role,
                 ),
@@ -157,9 +169,9 @@ class _AdminShellState extends State<AdminShell> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (previewRole != null) ...[
+                          if (rolePreview != null) ...[
                             AdminPreviewBanner(
-                              roleLabel: previewRole.label,
+                              roleLabel: rolePreview.role.label,
                               onExit: context.read<RolePreviewCubit>().exit,
                             ),
                             const SizedBox(height: 20),
@@ -175,7 +187,7 @@ class _AdminShellState extends State<AdminShell> {
                                 _select(AdminSection.notifications),
                           ),
                           const SizedBox(height: 24),
-                          AdminContentTransition(child: _content(previewRole)),
+                          AdminContentTransition(child: _content(rolePreview)),
                         ],
                       ),
                     ),

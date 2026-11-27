@@ -13,11 +13,13 @@ class AppBrandLogo extends StatelessWidget {
     this.onDark = false,
     this.showText = true,
     this.size = 40,
+    this.name,
   });
 
   final bool onDark;
   final bool showText;
   final double size;
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,7 @@ class AppBrandLogo extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppStrings.appName,
+                name ?? AppStrings.appName,
                 style: onDark
                     ? AppTextStyles.brandTitle
                     : AppTextStyles.sidebarBrandTitle,

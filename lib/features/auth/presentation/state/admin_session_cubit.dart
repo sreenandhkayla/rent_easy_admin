@@ -36,6 +36,14 @@ class AdminSessionCubit extends Cubit<AdminSessionState> {
     AdminSessionState(status: AdminSessionStatus.signedIn, account: account),
   );
 
+  void accountUpdated(AdminRecord account) {
+    if (state.status != AdminSessionStatus.signedIn) return;
+    if (state.account?.id != account.id) return;
+    emit(
+      AdminSessionState(status: AdminSessionStatus.signedIn, account: account),
+    );
+  }
+
   void signedOut() =>
       emit(const AdminSessionState(status: AdminSessionStatus.signedOut));
 }

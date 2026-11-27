@@ -18,6 +18,7 @@ class ShopsRemoteDataSource {
   static const String _userNameField = 'name';
   static const int _lookupLimit = 10;
   static const int _whereInLimit = 30;
+  static const int _ownerShopsLimit = 100;
 
   final FirebaseFirestore _firestore;
 
@@ -154,6 +155,39 @@ class ShopsRemoteDataSource {
         .get();
     return _shopsFrom(snapshot, today);
   });
+
+  Future<Either<Failure, Shop?>> fetchShop(String shopId, DateTime today) =>
+      _read(() async {
+        final document = await _shops.doc(shopId).get();
+        final Map<String, dynamic>? data = document.data();
+        if (!document.exists || data == null) return null;
+        return Shop.fromDocument(document.id, data, now: today);
+      });
+
+  Future<Either<Failure, List<Shop>>> fetchOwnerShops(
+    String ownerId,
+    DateTime today,
+  ) => _read(() async {
+    final snapshot = await _shops
+        .where(Shop.ownerIdField, isEqualTo: ownerId)
+        .limit(_ownerShopsLimit)
+        .get();
+    return _shopsFrom(snapshot, today);
+  });
+
+  Future<Either<Failure, Unit>> setRestricted(
+    String shopId,
+    bool isRestricted,
+  ) async {
+    try {
+      await _shops.doc(shopId).update({Shop.isRestrictedField: isRestricted});
+      return right(unit);
+    } on FirebaseException catch (error) {
+      return left(FirestoreFailures.write(error.code));
+    } catch (_) {
+      return left(const DataFailure(AppStrings.recordsSaveFailed));
+    }
+  }
 
   Future<Either<Failure, Map<String, String>>> fetchOwnerNames(
     Set<String> ownerIds,

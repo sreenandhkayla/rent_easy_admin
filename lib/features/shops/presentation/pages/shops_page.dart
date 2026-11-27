@@ -79,8 +79,12 @@ class ShopsPage extends StatelessWidget {
                           onPageChanged: cubit.goToPage,
                           onPageSizeChanged: cubit.setPageSize,
                           onRetry: cubit.retry,
-                          onView: (shop) => Navigator.of(context)
-                              .pushNamed(AppRoutes.shopDetailsFor(shop.shopId)),
+                          onView: (shop) async {
+                            final Object? changed = await Navigator.of(
+                              context,
+                            ).pushNamed(AppRoutes.shopDetailsFor(shop.shopId));
+                            if (changed == true) cubit.load();
+                          },
                         ),
                     ],
                   ),

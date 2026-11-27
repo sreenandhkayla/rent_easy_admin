@@ -10,12 +10,14 @@ import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_responsive_grid.dart';
 import '../../../../core/widgets/app_secondary_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../data/models/admin_account.dart';
 import '../state/edit_profile_state.dart';
 
 class EditProfileFormCard extends StatefulWidget {
   const EditProfileFormCard({
     super.key,
     required this.state,
+    required this.account,
     required this.onNameChanged,
     required this.onMobileChanged,
     required this.onCancel,
@@ -23,6 +25,7 @@ class EditProfileFormCard extends StatefulWidget {
   });
 
   final EditProfileState state;
+  final AdminAccount account;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onMobileChanged;
   final VoidCallback onCancel;
@@ -52,8 +55,9 @@ class _EditProfileFormCardState extends State<EditProfileFormCard> {
   @override
   Widget build(BuildContext context) {
     final EditProfileState state = widget.state;
+    final AdminAccount account = widget.account;
     final String displayName = state.name.trim().isEmpty
-        ? state.account.name
+        ? account.name
         : state.name.trim();
     final Widget name = AppTextField(
       label: SettingsStrings.fullNameLabel,
@@ -93,10 +97,7 @@ class _EditProfileFormCardState extends State<EditProfileFormCard> {
                     Text(displayName, style: AppTextStyles.profileName),
                     const SizedBox(height: 2),
                     Text(
-                      SettingsStrings.roleAndEmail(
-                        state.account.role,
-                        state.account.email,
-                      ),
+                      SettingsStrings.roleAndEmail(account.role, account.email),
                       style: AppTextStyles.bodyCaption,
                     ),
                   ],
@@ -136,15 +137,12 @@ class _EditProfileFormCardState extends State<EditProfileFormCard> {
             children: [
               AppDetailField(
                 label: SettingsStrings.workEmail,
-                value: state.account.email,
+                value: account.email,
               ),
-              AppDetailField(
-                label: SettingsStrings.role,
-                value: state.account.role,
-              ),
+              AppDetailField(label: SettingsStrings.role, value: account.role),
               AppDetailField(
                 label: SettingsStrings.adminId,
-                value: state.account.adminId,
+                value: account.adminId,
               ),
             ],
           ),
@@ -156,11 +154,12 @@ class _EditProfileFormCardState extends State<EditProfileFormCard> {
             children: [
               AppSecondaryButton(
                 label: SettingsStrings.cancel,
-                onPressed: widget.onCancel,
+                onPressed: state.isSaving ? null : widget.onCancel,
               ),
               AppPrimaryButton(
                 label: SettingsStrings.saveChanges,
                 isCompact: true,
+                isLoading: state.isSaving,
                 onPressed: widget.onSave,
               ),
             ],
