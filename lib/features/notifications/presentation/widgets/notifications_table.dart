@@ -21,13 +21,16 @@ class NotificationsTable extends StatelessWidget {
     required this.rows,
     required this.onView,
     required this.onEdit,
+    this.isLoading = false,
   });
 
   static const double _minTableWidth = 960;
+  static const double _progressHeight = 2;
 
   final List<AdminNotification> rows;
   final ValueChanged<AdminNotification> onView;
   final ValueChanged<AdminNotification> onEdit;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +45,15 @@ class NotificationsTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _HeaderRow(),
-                if (rows.isEmpty)
+                SizedBox(
+                  height: _progressHeight,
+                  child: isLoading
+                      ? const LinearProgressIndicator(
+                          minHeight: _progressHeight,
+                        )
+                      : null,
+                ),
+                if (rows.isEmpty && !isLoading)
                   const AppEmptyState(
                     svgIcon: AppImages.notificationIcon,
                     title: NotificationsStrings.noNotificationsTitle,
@@ -121,7 +132,7 @@ class _NotificationRow extends StatelessWidget {
   final VoidCallback onEdit;
 
   String get _date {
-    final DateTime? at = item.sendAt;
+    final DateTime? at = item.sentAt ?? item.queuedAt ?? item.createdAt;
     return at == null
         ? NotificationsStrings.emptyValue
         : AppFormatters.timestamp(at);
@@ -129,13 +140,13 @@ class _NotificationRow extends StatelessWidget {
 
   String get _delivered {
     final int? delivered = item.delivered;
-    final int? recipients = item.recipients;
-    if (delivered == null || recipients == null) {
+    final int? devices = item.devices;
+    if (delivered == null || devices == null) {
       return NotificationsStrings.emptyValue;
     }
     return NotificationsStrings.deliveredOf(
       AppFormatters.number(delivered),
-      AppFormatters.number(recipients),
+      AppFormatters.number(devices),
     );
   }
 
@@ -171,7 +182,8 @@ class _NotificationRow extends StatelessWidget {
                 children: [
                   Text(item.title, style: AppTextStyles.titleSmall),
                   const SizedBox(height: 2),
-                  Text(item.notificationId, style: AppTextStyles.meta),
+                  if (item.createdByName.isNotEmpty)
+                    Text(item.createdByName, style: AppTextStyles.meta),
                 ],
               ),
             ),

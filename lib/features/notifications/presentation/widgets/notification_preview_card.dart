@@ -12,32 +12,19 @@ import '../../data/models/admin_notification.dart';
 import '../state/create_notification_state.dart';
 
 class NotificationPreviewCard extends StatelessWidget {
-  const NotificationPreviewCard({
-    super.key,
-    required this.state,
-    required this.reach,
-  });
+  const NotificationPreviewCard({super.key, required this.state});
 
   static const double _phoneWidth = 240;
 
   final CreateNotificationState state;
-  final AudienceReach reach;
 
   String get _recipients {
-    final int? owners = reach.owners;
-    return owners == null
-        ? NotificationsStrings.emptyValue
-        : NotificationsStrings.ownersCount(AppFormatters.number(owners));
-  }
-
-  String get _delivery {
-    if (state.delivery == NotificationDelivery.sendNow) {
-      return NotificationsStrings.immediately;
+    final AudienceReach? reach = state.reachOf(state.audience);
+    if (reach == null) return NotificationsStrings.counting;
+    if (reach.owners case final int owners) {
+      return NotificationsStrings.ownersCount(AppFormatters.number(owners));
     }
-    final DateTime? at = state.scheduledAt;
-    return at == null
-        ? NotificationsStrings.emptyValue
-        : NotificationsStrings.scheduledFor(AppFormatters.timestamp(at));
+    return NotificationsStrings.countedWhenSent;
   }
 
   @override
@@ -169,7 +156,6 @@ class NotificationPreviewCard extends StatelessWidget {
             label: NotificationsStrings.uniqueRecipients,
             value: _recipients,
           ),
-          _SummaryLine(label: NotificationsStrings.delivery, value: _delivery),
         ],
       ),
     );

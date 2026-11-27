@@ -4,47 +4,50 @@ import '../../data/models/admin_notification.dart';
 enum NotificationFilter {
   all(NotificationsStrings.filterAll, null),
   sent(NotificationsStrings.filterSent, NotificationStatus.sent),
-  scheduled(NotificationsStrings.filterScheduled, NotificationStatus.scheduled),
-  drafts(NotificationsStrings.filterDrafts, NotificationStatus.draft);
+  drafts(NotificationsStrings.filterDrafts, NotificationStatus.draft),
+  failed(NotificationsStrings.filterFailed, NotificationStatus.failed);
 
   const NotificationFilter(this.label, this.status);
 
   final String label;
   final NotificationStatus? status;
-
-  bool matches(NotificationStatus value) => status == null || status == value;
 }
 
 class NotificationsState {
   const NotificationsState({
     this.isLoading = false,
     this.notifications = const [],
+    this.counts = const {},
     this.filter = NotificationFilter.all,
+    this.errorMessage,
     this.updatedAt,
   });
 
   final bool isLoading;
   final List<AdminNotification> notifications;
+  final Map<NotificationStatus?, int> counts;
   final NotificationFilter filter;
+  final String? errorMessage;
   final DateTime? updatedAt;
 
-  int countFor(NotificationFilter value) =>
-      notifications.where((item) => value.matches(item.status)).length;
+  bool get hasLoaded => updatedAt != null;
 
-  List<AdminNotification> get visibleNotifications =>
-      notifications.where((item) => filter.matches(item.status)).toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  int countFor(NotificationFilter value) => counts[value.status] ?? 0;
 
   NotificationsState copyWith({
     bool? isLoading,
     List<AdminNotification>? notifications,
+    Map<NotificationStatus?, int>? counts,
     NotificationFilter? filter,
+    String? Function()? errorMessage,
     DateTime? updatedAt,
   }) {
     return NotificationsState(
       isLoading: isLoading ?? this.isLoading,
       notifications: notifications ?? this.notifications,
+      counts: counts ?? this.counts,
       filter: filter ?? this.filter,
+      errorMessage: errorMessage == null ? this.errorMessage : errorMessage(),
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

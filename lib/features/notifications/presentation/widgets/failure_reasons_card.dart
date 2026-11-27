@@ -7,10 +7,10 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../data/models/admin_notification.dart';
 
-class FailedDeliveriesCard extends StatelessWidget {
-  const FailedDeliveriesCard({super.key, required this.failures});
+class FailureReasonsCard extends StatelessWidget {
+  const FailureReasonsCard({super.key, required this.reasons});
 
-  final List<DeliveryFailure> failures;
+  final List<FailureReasonCount> reasons;
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +28,18 @@ class FailedDeliveriesCard extends StatelessWidget {
               runSpacing: 4,
               children: [
                 Text(
-                  NotificationsStrings.failedDeliveries,
+                  NotificationsStrings.failureReasons,
                   style: AppTextStyles.cardTitle,
                 ),
                 Text(
-                  NotificationsStrings.failedDeliveriesNote,
+                  NotificationsStrings.failureReasonsNote,
                   style: AppTextStyles.meta,
                 ),
               ],
             ),
           ),
           const Divider(height: 1, color: AppColors.divider),
-          if (failures.isEmpty)
+          if (reasons.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 28),
               child: Text(
@@ -48,21 +48,18 @@ class FailedDeliveriesCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-          for (int i = 0; i < failures.length; i++)
-            _FailureRow(
-              failure: failures[i],
-              showDivider: i < failures.length - 1,
-            ),
+          for (int i = 0; i < reasons.length; i++)
+            _ReasonRow(reason: reasons[i], showDivider: i < reasons.length - 1),
         ],
       ),
     );
   }
 }
 
-class _FailureRow extends StatelessWidget {
-  const _FailureRow({required this.failure, required this.showDivider});
+class _ReasonRow extends StatelessWidget {
+  const _ReasonRow({required this.reason, required this.showDivider});
 
-  final DeliveryFailure failure;
+  final FailureReasonCount reason;
   final bool showDivider;
 
   @override
@@ -76,23 +73,13 @@ class _FailureRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            flex: 5,
-            child: Text(failure.shopName, style: AppTextStyles.titleSmall),
-          ),
+          Expanded(child: Text(reason.reason, style: AppTextStyles.bodySmall)),
           const SizedBox(width: 12),
-          Expanded(
-            flex: 3,
-            child: Text(failure.reason, style: AppTextStyles.bodySmall),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 3,
-            child: Text(
-              AppFormatters.timestamp(failure.at),
-              style: AppTextStyles.tableCell,
-              textAlign: TextAlign.end,
+          Text(
+            NotificationsStrings.devicesCount(
+              AppFormatters.number(reason.count),
             ),
+            style: AppTextStyles.titleSmall,
           ),
         ],
       ),

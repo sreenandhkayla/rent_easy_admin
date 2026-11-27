@@ -22,7 +22,7 @@ class NotificationStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double? share = notification.deliveredShare;
-    final DateTime? sendAt = notification.sendAt;
+    final DateTime? sentAt = notification.sentAt;
     return AppResponsiveGrid(
       minItemWidth: 200,
       children: [
@@ -61,9 +61,9 @@ class NotificationStatsRow extends StatelessWidget {
               const Spacer(),
               const SizedBox(height: 8),
               Text(
-                sendAt == null
-                    ? NotificationsStrings.notScheduled
-                    : AppFormatters.timestamp(sendAt),
+                sentAt == null
+                    ? NotificationsStrings.notSentYet
+                    : AppFormatters.timestamp(sentAt),
                 style: AppTextStyles.meta,
               ),
             ],

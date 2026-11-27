@@ -16,9 +16,13 @@ class NotificationStatusPill extends StatelessWidget {
         AppColors.statusGreen,
         AppColors.pillGreenBackground,
       ),
-      NotificationStatus.scheduled => (
-        AppColors.pillSlateText,
-        AppColors.pillSlateBackground,
+      NotificationStatus.queued || NotificationStatus.sending => (
+        AppColors.pillAmberText,
+        AppColors.pillAmberBackground,
+      ),
+      NotificationStatus.failed => (
+        AppColors.pillRedText,
+        AppColors.pillRedBackground,
       ),
       NotificationStatus.draft => (
         AppColors.textSecondary,

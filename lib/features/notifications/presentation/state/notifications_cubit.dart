@@ -1,30 +1,42 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/notifications_mock_data.dart';
+import '../../data/repositories/notifications_repository.dart';
 import 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit() : super(const NotificationsState());
+  NotificationsCubit(this._repository) : super(const NotificationsState());
 
-  static const Duration _mockLatency = Duration(milliseconds: 700);
+  final NotificationsRepository _repository;
 
-  Future<void> load() async {
-    emit(state.copyWith(isLoading: true));
-    await Future<void>.delayed(_mockLatency);
-    if (isClosed) return;
+  Future<void> load() => _fetch(state.filter, withCounts: true);
+
+  Future<void> filterBy(NotificationFilter filter) =>
+      _fetch(filter, withCounts: false);
+
+  Future<void> _fetch(
+    NotificationFilter filter, {
+    required bool withCounts,
+  }) async {
     emit(
-      state.copyWith(
-        isLoading: false,
-        notifications: NotificationsMockData.notifications(),
-        updatedAt: DateTime.now(),
+      state.copyWith(filter: filter, isLoading: true, errorMessage: () => null),
+    );
+    final listFuture = _repository.fetchList(filter.status);
+    final countsFuture = withCounts ? _repository.fetchCounts() : null;
+    final listResult = await listFuture;
+    final countsResult = await countsFuture;
+    if (isClosed || state.filter != filter) return;
+    listResult.match(
+      (failure) => emit(
+        state.copyWith(isLoading: false, errorMessage: () => failure.message),
+      ),
+      (list) => emit(
+        state.copyWith(
+          isLoading: false,
+          notifications: list,
+          counts: countsResult?.getOrElse((_) => state.counts),
+          updatedAt: DateTime.now(),
+        ),
       ),
     );
   }
-
-  void syncNotifications() => emit(
-    state.copyWith(notifications: NotificationsMockData.notifications()),
-  );
-
-  void filterBy(NotificationFilter filter) =>
-      emit(state.copyWith(filter: filter));
 }

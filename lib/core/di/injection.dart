@@ -6,6 +6,11 @@ import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/dashboard/data/datasources/dashboard_remote_data_source.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository.dart';
 import '../../features/dashboard/presentation/state/dashboard_cubit.dart';
+import '../../features/notifications/data/datasources/notifications_remote_data_source.dart';
+import '../../features/notifications/data/repositories/notifications_repository.dart';
+import '../../features/notifications/presentation/state/create_notification_cubit.dart';
+import '../../features/notifications/presentation/state/notification_details_cubit.dart';
+import '../../features/notifications/presentation/state/notifications_cubit.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/auth/presentation/state/admin_session_cubit.dart';
 import '../../features/auth/presentation/state/auth_cubit.dart';
@@ -74,6 +79,25 @@ void configureDependencies() {
         getIt<AuthRemoteDataSource>(),
         getIt<AdminsRemoteDataSource>(),
       ),
+    )
+    ..registerLazySingleton<NotificationsRemoteDataSource>(
+      () => NotificationsRemoteDataSource(
+        FirebaseFirestore.instance,
+        FirebaseAuth.instance,
+      ),
+    )
+    ..registerLazySingleton<NotificationsRepository>(
+      () => NotificationsRepository(getIt<NotificationsRemoteDataSource>()),
+    )
+    ..registerFactory<NotificationsCubit>(
+      () => NotificationsCubit(getIt<NotificationsRepository>()),
+    )
+    ..registerFactoryParam<CreateNotificationCubit, String?, void>(
+      (draftId, _) =>
+          CreateNotificationCubit(getIt<NotificationsRepository>(), draftId),
+    )
+    ..registerFactoryParam<NotificationDetailsCubit, String?, void>(
+      (id, _) => NotificationDetailsCubit(getIt<NotificationsRepository>(), id),
     )
     ..registerLazySingleton<DashboardRemoteDataSource>(
       () => DashboardRemoteDataSource(FirebaseFirestore.instance),

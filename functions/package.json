@@ -1,0 +1,17 @@
+{
+  "name": "rent-easy-admin-functions",
+  "private": true,
+  "description": "Cloud Functions for the RentEasy admin dashboard: sends queued admin notifications to owners with FCM.",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "deploy": "firebase deploy --only functions:admin"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.1",
+    "firebase-functions": "^7.4.0"
+  }
+}

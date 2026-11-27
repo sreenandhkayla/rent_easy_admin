@@ -15,5 +15,12 @@
   },
   "firestore": {
     "indexes": "firestore.indexes.json"
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "admin",
+      "ignore": ["node_modules", ".git", "test", "*.log"]
+    }
+  ]
 }

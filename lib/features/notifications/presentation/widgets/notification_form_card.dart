@@ -21,13 +21,10 @@ class NotificationFormCard extends StatelessWidget {
   const NotificationFormCard({
     super.key,
     required this.state,
-    required this.reachOf,
     required this.onTypeChanged,
     required this.onTitleChanged,
     required this.onMessageChanged,
     required this.onAudienceChanged,
-    required this.onDeliveryChanged,
-    required this.onPickSchedule,
     required this.onCancel,
     required this.onSaveDraft,
     required this.onReview,
@@ -37,38 +34,28 @@ class NotificationFormCard extends StatelessWidget {
   static const int messageMaxLength = 240;
 
   final CreateNotificationState state;
-  final AudienceReach Function(NotificationAudience audience) reachOf;
   final ValueChanged<NotificationType> onTypeChanged;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<String> onMessageChanged;
   final ValueChanged<NotificationAudience> onAudienceChanged;
-  final ValueChanged<NotificationDelivery> onDeliveryChanged;
-  final VoidCallback onPickSchedule;
   final VoidCallback onCancel;
   final VoidCallback onSaveDraft;
   final VoidCallback onReview;
 
   String _audienceNote(NotificationAudience audience) {
-    final AudienceReach reach = reachOf(audience);
-    final int? shops = reach.shops;
-    final int? owners = reach.owners;
-    return switch (audience) {
-      NotificationAudience.allOwners =>
-        NotificationsStrings.audienceAllOwnersNote,
-      NotificationAudience.selectedShops =>
-        NotificationsStrings.audienceSelectedShopsNote,
-      _ when shops != null && owners != null =>
-        NotificationsStrings.shopsAndOwners(
-          AppFormatters.number(shops),
-          AppFormatters.number(owners),
-        ),
-      _ => NotificationsStrings.emptyValue,
-    };
+    final AudienceReach? reach = state.reachOf(audience);
+    if (reach == null) return NotificationsStrings.counting;
+    if (reach.owners case final int owners) {
+      return NotificationsStrings.ownersCount(AppFormatters.number(owners));
+    }
+    if (reach.shops case final int shops) {
+      return NotificationsStrings.shopsCount(AppFormatters.number(shops));
+    }
+    return NotificationsStrings.emptyValue;
   }
 
   @override
   Widget build(BuildContext context) {
-    final DateTime? scheduledAt = state.scheduledAt;
     return AppCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -120,7 +107,7 @@ class NotificationFormCard extends StatelessWidget {
                 spacing: 10,
                 children: [
                   for (final NotificationAudience audience
-                      in CreateNotificationState.audiences)
+                      in NotificationAudience.values)
                     AppRadioCard(
                       title: audience.label,
                       subtitle: _audienceNote(audience),
@@ -134,63 +121,6 @@ class NotificationFormCard extends StatelessWidget {
                 NotificationsStrings.audienceDedupeNote,
                 style: AppTextStyles.meta,
               ),
-              if (state.showAudienceError) ...[
-                const SizedBox(height: 6),
-                const Text(
-                  NotificationsStrings.selectedShopsUnavailable,
-                  style: AppTextStyles.fieldError,
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 20),
-          _Section(
-            label: NotificationsStrings.deliveryLabel,
-            children: [
-              AppResponsiveGrid(
-                minItemWidth: 240,
-                maxColumns: 2,
-                spacing: 10,
-                children: [
-                  AppRadioCard(
-                    title: NotificationsStrings.sendNow,
-                    subtitle: NotificationsStrings.sendNowNote,
-                    isSelected: state.delivery == NotificationDelivery.sendNow,
-                    onTap: () =>
-                        onDeliveryChanged(NotificationDelivery.sendNow),
-                  ),
-                  AppRadioCard(
-                    title: NotificationsStrings.schedule,
-                    subtitle: NotificationsStrings.scheduleNote,
-                    isSelected: state.delivery == NotificationDelivery.schedule,
-                    onTap: () =>
-                        onDeliveryChanged(NotificationDelivery.schedule),
-                  ),
-                ],
-              ),
-              if (state.delivery == NotificationDelivery.schedule) ...[
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: AppSecondaryButton(
-                    label: scheduledAt == null
-                        ? NotificationsStrings.pickDateTime
-                        : NotificationsStrings.scheduledFor(
-                            AppFormatters.timestamp(scheduledAt),
-                          ),
-                    icon: Icons.calendar_today_outlined,
-                    iconColor: AppColors.textPrimary,
-                    onPressed: onPickSchedule,
-                  ),
-                ),
-              ],
-              if (state.showScheduleError(DateTime.now())) ...[
-                const SizedBox(height: 6),
-                const Text(
-                  NotificationsStrings.scheduleRequired,
-                  style: AppTextStyles.fieldError,
-                ),
-              ],
             ],
           ),
           const Divider(height: 40, color: AppColors.divider),
@@ -210,12 +140,13 @@ class NotificationFormCard extends StatelessWidget {
               ),
               AppSecondaryButton(
                 label: NotificationsStrings.saveDraft,
-                onPressed: onSaveDraft,
+                onPressed: state.isSaving ? null : onSaveDraft,
               ),
               AppPrimaryButton(
                 label: NotificationsStrings.reviewAndSend,
                 svgIcon: AppImages.sendIcon,
                 isCompact: true,
+                isLoading: state.isSaving,
                 onPressed: onReview,
               ),
             ],

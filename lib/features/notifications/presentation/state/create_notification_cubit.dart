@@ -1,39 +1,90 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart';
 
+import '../../../../core/errors/failure.dart';
 import '../../data/models/admin_notification.dart';
-import '../../data/notifications_mock_data.dart';
+import '../../data/repositories/notifications_repository.dart';
 import 'create_notification_state.dart';
 
+typedef NotificationSaveResult = ({String? savedTitle, String? error});
+
 class CreateNotificationCubit extends Cubit<CreateNotificationState> {
-  factory CreateNotificationCubit({String? draftId}) {
-    final AdminNotification? found = draftId == null
-        ? null
-        : NotificationsMockData.notification(draftId);
-    return CreateNotificationCubit._(
-      found?.status == NotificationStatus.draft ? found : null,
-    );
+  CreateNotificationCubit(this._repository, this.draftId)
+    : super(const CreateNotificationState());
+
+  final NotificationsRepository _repository;
+  final String? draftId;
+
+  Future<void> load() async {
+    final String? id = draftId;
+    if (id == null || id.isEmpty) {
+      emit(
+        CreateNotificationState(
+          status: CreateNotificationStatus.ready,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } else {
+      emit(const CreateNotificationState());
+      final result = await _repository.fetch(id);
+      if (isClosed) return;
+      final bool loaded = result.match(
+        (failure) {
+          emit(
+            CreateNotificationState(
+              status: CreateNotificationStatus.failure,
+              errorMessage: failure.message,
+            ),
+          );
+          return false;
+        },
+        (notification) {
+          if (notification == null) {
+            emit(
+              const CreateNotificationState(
+                status: CreateNotificationStatus.notFound,
+              ),
+            );
+            return false;
+          }
+          if (!notification.isDraft) {
+            emit(
+              const CreateNotificationState(
+                status: CreateNotificationStatus.notEditable,
+              ),
+            );
+            return false;
+          }
+          emit(
+            CreateNotificationState(
+              status: CreateNotificationStatus.ready,
+              existingId: notification.id,
+              type: notification.type,
+              title: notification.title,
+              message: notification.message,
+              audience: notification.audience,
+              updatedAt: DateTime.now(),
+            ),
+          );
+          return true;
+        },
+      );
+      if (!loaded) return;
+    }
+    await _loadReach();
   }
 
-  CreateNotificationCubit._(this.draft) : super(_initial(draft));
-
-  final AdminNotification? draft;
-
-  bool get isEditing => draft != null;
-
-  static CreateNotificationState _initial(AdminNotification? draft) {
-    final CreateNotificationState blank = CreateNotificationState(
-      updatedAt: DateTime.now(),
-    );
-    if (draft == null) return blank;
-    return blank.copyWith(
-      type: draft.type,
-      title: draft.title,
-      message: draft.message,
-      audience: draft.audience,
-    );
+  Future<void> _loadReach() async {
+    for (final NotificationAudience audience in NotificationAudience.values) {
+      final result = await _repository.fetchReach(audience);
+      if (isClosed) return;
+      result.match(
+        (_) {},
+        (reach) =>
+            emit(state.copyWith(reach: {...state.reach, audience: reach})),
+      );
+    }
   }
-
-  void refresh() => emit(state.copyWith(updatedAt: DateTime.now()));
 
   void setType(NotificationType value) => emit(state.copyWith(type: value));
 
@@ -44,68 +95,48 @@ class CreateNotificationCubit extends Cubit<CreateNotificationState> {
   void setAudience(NotificationAudience value) =>
       emit(state.copyWith(audience: value));
 
-  void setDelivery(NotificationDelivery value) =>
-      emit(state.copyWith(delivery: value));
-
-  void setScheduledAt(DateTime value) =>
-      emit(state.copyWith(scheduledAt: value));
-
-  AudienceReach get reach => reachFor(state.audience);
-
-  AudienceReach reachFor(NotificationAudience audience) =>
-      NotificationsMockData.reachOf(audience);
-
   bool validateForSend() {
-    if (state.canSend(DateTime.now())) return true;
+    if (state.canSend) return true;
     emit(state.copyWith(showErrors: true));
     return false;
   }
 
-  AdminNotification? saveDraft({required String actor}) {
+  Future<NotificationSaveResult> saveDraft(NotificationAuthor author) async {
     if (!state.isTitleValid) {
       emit(state.copyWith(showDraftErrors: true));
-      return null;
+      return (savedTitle: null, error: null);
     }
-    return _store(NotificationStatus.draft, actor: actor);
-  }
-
-  AdminNotification? send({required String actor}) {
-    if (!validateForSend()) return null;
-    return _store(
-      state.delivery == NotificationDelivery.schedule
-          ? NotificationStatus.scheduled
-          : NotificationStatus.sent,
-      actor: actor,
+    return _save(
+      () => _repository.saveDraft(
+        state.draft,
+        author: author,
+        existingId: state.existingId,
+      ),
     );
   }
 
-  AdminNotification _store(NotificationStatus status, {required String actor}) {
-    final DateTime now = DateTime.now();
-    final int? owners = reach.owners;
-    final AdminNotification? existing = draft;
-    final AdminNotification notification = AdminNotification(
-      notificationId:
-          existing?.notificationId ?? NotificationsMockData.nextId(),
-      title: state.title.trim(),
-      message: state.message.trim(),
-      createdBy: existing?.createdBy ?? actor,
-      type: state.type,
-      audience: state.audience,
-      status: status,
-      createdAt: existing?.createdAt ?? now,
-      sendAt: switch (status) {
-        NotificationStatus.sent => now,
-        NotificationStatus.scheduled => state.scheduledAt,
-        NotificationStatus.draft => null,
-      },
-      delivered: status == NotificationStatus.sent ? owners : null,
-      recipients: owners,
+  Future<NotificationSaveResult> send(NotificationAuthor author) async {
+    if (!validateForSend()) return (savedTitle: null, error: null);
+    return _save(
+      () => _repository.queueSend(
+        state.draft,
+        author: author,
+        existingId: state.existingId,
+      ),
     );
-    if (existing == null) {
-      NotificationsMockData.add(notification);
-    } else {
-      NotificationsMockData.replace(notification);
-    }
-    return notification;
+  }
+
+  Future<NotificationSaveResult> _save(
+    Future<Either<Failure, String>> Function() action,
+  ) async {
+    if (state.isSaving) return (savedTitle: null, error: null);
+    emit(state.copyWith(isSaving: true));
+    final result = await action();
+    if (isClosed) return (savedTitle: null, error: null);
+    emit(state.copyWith(isSaving: false));
+    return result.match(
+      (failure) => (savedTitle: null, error: failure.message),
+      (_) => (savedTitle: state.title.trim(), error: null),
+    );
   }
 }

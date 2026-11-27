@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/resources/strings/app_strings.dart';
 import '../../../../core/resources/strings/notifications_strings.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/admin_shell/admin_section.dart';
 import '../../../../core/widgets/admin_shell/admin_shell.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_list_skeleton.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_refresh_button.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
+import '../../data/datasources/notifications_remote_data_source.dart';
 import '../state/notifications_cubit.dart';
 import '../state/notifications_state.dart';
 import '../widgets/notifications_table.dart';
@@ -19,11 +25,16 @@ class NotificationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => NotificationsCubit()..load(),
+      create: (_) => getIt<NotificationsCubit>()..load(),
       child: BlocBuilder<NotificationsCubit, NotificationsState>(
         builder: (context, state) {
           final NotificationsCubit cubit = context.read<NotificationsCubit>();
           final DateTime? updatedAt = state.updatedAt;
+          Future<void> open(String route) async {
+            await Navigator.of(context).pushNamed(route);
+            cubit.load();
+          }
+
           return AdminShell(
             section: AdminSection.notifications,
             title: NotificationsStrings.title,
@@ -32,7 +43,7 @@ class NotificationsPage extends StatelessWidget {
               if (updatedAt != null)
                 AppRefreshButton(updatedAt: updatedAt, onPressed: cubit.load),
             ],
-            child: state.isLoading && state.notifications.isEmpty
+            child: !state.hasLoaded && state.errorMessage == null
                 ? const AppListSkeleton()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -59,33 +70,40 @@ class NotificationsPage extends StatelessWidget {
                           label: NotificationsStrings.createNotification,
                           icon: Icons.add,
                           isCompact: true,
-                          onPressed: () async {
-                            await Navigator.of(context)
-                                .pushNamed(AppRoutes.createNotification);
-                            cubit.syncNotifications();
-                          },
+                          onPressed: () => open(AppRoutes.createNotification),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      NotificationsTable(
-                        rows: state.visibleNotifications,
-                        onView: (notification) async {
-                          await Navigator.of(context).pushNamed(
-                            AppRoutes.notificationDetailsFor(
-                              notification.notificationId,
+                      if (state.errorMessage case final String error)
+                        AppCard(
+                          child: AppEmptyState(
+                            icon: Icons.error_outline_rounded,
+                            title: NotificationsStrings.loadFailedTitle,
+                            message: error,
+                            actionLabel: AppStrings.retry,
+                            onAction: cubit.load,
+                          ),
+                        )
+                      else ...[
+                        NotificationsTable(
+                          rows: state.notifications,
+                          isLoading: state.isLoading,
+                          onView: (item) =>
+                              open(AppRoutes.notificationDetailsFor(item.id)),
+                          onEdit: (item) =>
+                              open(AppRoutes.editNotificationFor(item.id)),
+                        ),
+                        if (state.notifications.length >=
+                            NotificationsRemoteDataSource.listLimit) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            NotificationsStrings.listLimitNote(
+                              NotificationsRemoteDataSource.listLimit,
                             ),
-                          );
-                          cubit.syncNotifications();
-                        },
-                        onEdit: (notification) async {
-                          await Navigator.of(context).pushNamed(
-                            AppRoutes.editNotificationFor(
-                              notification.notificationId,
-                            ),
-                          );
-                          cubit.syncNotifications();
-                        },
-                      ),
+                            style: AppTextStyles.meta,
+                          ),
+                        ],
+                      ],
                     ],
                   ),
           );
